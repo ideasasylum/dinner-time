@@ -1,0 +1,5 @@
+# paths melee push does not need to send to the server (one per line; trailing / for a directory).
+.melee/
+build/
+bin/
+*.sqlite*

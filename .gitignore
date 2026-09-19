@@ -1,0 +1,12 @@
+# What the build writes, and the app's local data. Mirrors .meleeignore.
+.melee/
+build/
+bin/
+spin.lock
+*.sqlite*
+
+# Impeccable session artefacts: review captures and the decision round's spent hand.
+# DESIGN.md's sidecar (.impeccable/design.json) is kept.
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/questions/

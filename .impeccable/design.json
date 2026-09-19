@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-19T00:00:00Z",
+  "title": "Design System: Dinner Time",
+  "extensions": {
+    "colorMeta": {
+      "board": { "role": "primary", "displayName": "Enamel White", "canonical": "#ffffff", "tonalRamp": ["oklch(15% 0 0)", "oklch(28% 0 0)", "oklch(42% 0 0)", "oklch(56% 0 0)", "oklch(70% 0 0)", "oklch(84% 0 0)", "oklch(94% 0 0)", "oklch(100% 0 0)"] },
+      "board-lit": { "role": "primary", "displayName": "Pale Red Band", "canonical": "#fdeaea", "tonalRamp": ["oklch(15% 0.03 25)", "oklch(28% 0.05 25)", "oklch(42% 0.07 25)", "oklch(56% 0.08 25)", "oklch(70% 0.07 25)", "oklch(84% 0.05 25)", "oklch(92% 0.03 25)", "oklch(96% 0.02 25)"] },
+      "board-deep": { "role": "primary", "displayName": "Board Deep", "canonical": "#f3f3f1", "tonalRamp": ["oklch(15% 0.003 90)", "oklch(28% 0.003 90)", "oklch(42% 0.003 90)", "oklch(56% 0.003 90)", "oklch(70% 0.003 90)", "oklch(84% 0.003 90)", "oklch(92% 0.003 90)", "oklch(96% 0.003 90)"] },
+      "board-ink": { "role": "primary", "displayName": "Board Ink", "canonical": "#141414", "tonalRamp": ["oklch(12% 0 0)", "oklch(18% 0 0)", "oklch(28% 0 0)", "oklch(40% 0 0)", "oklch(54% 0 0)", "oklch(68% 0 0)", "oklch(82% 0 0)", "oklch(95% 0 0)"] },
+      "board-dim": { "role": "primary", "displayName": "Board Dim", "canonical": "#7a7a76", "tonalRamp": ["oklch(15% 0.004 90)", "oklch(28% 0.004 90)", "oklch(42% 0.004 90)", "oklch(56% 0.004 90)", "oklch(64% 0.004 90)", "oklch(74% 0.004 90)", "oklch(86% 0.004 90)", "oklch(95% 0.003 90)"] },
+      "board-line": { "role": "primary", "displayName": "Board Rule", "canonical": "#e4e4e0", "tonalRamp": ["oklch(15% 0.004 90)", "oklch(28% 0.004 90)", "oklch(42% 0.004 90)", "oklch(56% 0.004 90)", "oklch(70% 0.004 90)", "oklch(84% 0.004 90)", "oklch(91% 0.004 90)", "oklch(96% 0.003 90)"] },
+      "board-cap-lit": { "role": "primary", "displayName": "Lit Caption", "canonical": "#3a3a38", "tonalRamp": ["oklch(15% 0.003 90)", "oklch(24% 0.003 90)", "oklch(34% 0.003 90)", "oklch(44% 0.003 90)", "oklch(56% 0.003 90)", "oklch(70% 0.003 90)", "oklch(84% 0.003 90)", "oklch(95% 0.003 90)"] },
+      "red": { "role": "secondary", "displayName": "Timer Red", "canonical": "#d8232a", "tonalRamp": ["oklch(15% 0.06 27)", "oklch(28% 0.11 27)", "oklch(40% 0.16 27)", "oklch(52% 0.2 27)", "oklch(60% 0.22 27)", "oklch(72% 0.16 27)", "oklch(85% 0.08 27)", "oklch(95% 0.03 27)"] },
+      "red-hover": { "role": "secondary", "displayName": "Red Hover", "canonical": "#e5333a", "tonalRamp": ["oklch(15% 0.06 27)", "oklch(28% 0.11 27)", "oklch(40% 0.16 27)", "oklch(52% 0.2 27)", "oklch(63% 0.22 27)", "oklch(74% 0.16 27)", "oklch(86% 0.08 27)", "oklch(95% 0.03 27)"] },
+      "red-ink": { "role": "secondary", "displayName": "Red Ink", "canonical": "#ffffff", "tonalRamp": ["oklch(15% 0 0)", "oklch(28% 0 0)", "oklch(42% 0 0)", "oklch(56% 0 0)", "oklch(70% 0 0)", "oklch(84% 0 0)", "oklch(94% 0 0)", "oklch(100% 0 0)"] },
+      "ground": { "role": "neutral", "displayName": "Grey Ground", "canonical": "#ececea", "tonalRamp": ["oklch(15% 0.003 90)", "oklch(28% 0.003 90)", "oklch(42% 0.003 90)", "oklch(56% 0.003 90)", "oklch(70% 0.003 90)", "oklch(84% 0.003 90)", "oklch(93% 0.003 90)", "oklch(97% 0.003 90)"] },
+      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "#ffffff", "tonalRamp": ["oklch(15% 0 0)", "oklch(28% 0 0)", "oklch(42% 0 0)", "oklch(56% 0 0)", "oklch(70% 0 0)", "oklch(84% 0 0)", "oklch(94% 0 0)", "oklch(100% 0 0)"] },
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#141414", "tonalRamp": ["oklch(12% 0 0)", "oklch(18% 0 0)", "oklch(28% 0 0)", "oklch(40% 0 0)", "oklch(54% 0 0)", "oklch(68% 0 0)", "oklch(82% 0 0)", "oklch(95% 0 0)"] },
+      "muted": { "role": "neutral", "displayName": "Muted", "canonical": "#6a6a67", "tonalRamp": ["oklch(15% 0.004 90)", "oklch(28% 0.004 90)", "oklch(40% 0.004 90)", "oklch(50% 0.004 90)", "oklch(58% 0.004 90)", "oklch(72% 0.004 90)", "oklch(85% 0.004 90)", "oklch(95% 0.003 90)"] },
+      "line": { "role": "neutral", "displayName": "Rule", "canonical": "#d7d7d3", "tonalRamp": ["oklch(15% 0.004 90)", "oklch(28% 0.004 90)", "oklch(42% 0.004 90)", "oklch(56% 0.004 90)", "oklch(70% 0.004 90)", "oklch(80% 0.004 90)", "oklch(88% 0.004 90)", "oklch(96% 0.003 90)"] },
+      "field": { "role": "neutral", "displayName": "Field", "canonical": "#ffffff", "tonalRamp": ["oklch(15% 0 0)", "oklch(28% 0 0)", "oklch(42% 0 0)", "oklch(56% 0 0)", "oklch(70% 0 0)", "oklch(84% 0 0)", "oklch(94% 0 0)", "oklch(100% 0 0)"] },
+      "danger": { "role": "tertiary", "displayName": "Danger Red", "canonical": "#b42318", "tonalRamp": ["oklch(15% 0.05 30)", "oklch(26% 0.1 30)", "oklch(38% 0.15 30)", "oklch(48% 0.18 30)", "oklch(60% 0.18 30)", "oklch(72% 0.14 30)", "oklch(85% 0.08 30)", "oklch(95% 0.03 30)"] }
+    },
+    "typographyMeta": {
+      "clock": { "displayName": "Clock", "purpose": "The Now time in the sticky clock row only; the one number read from a metre." },
+      "time": { "displayName": "Time", "purpose": "Row start times, Start and Serve, page titles, minutes in the editor." },
+      "body": { "displayName": "Body", "purpose": "Running text, hints, inputs, checkbox labels, the Now/next line, the Serving line." },
+      "name": { "displayName": "Name", "purpose": "Step and plan names, card headings, dish headings (uppercase)." },
+      "cap": { "displayName": "Cap", "purpose": "Every 15px role: captions, labels, state words, platform boxes, buttons, tabs, heads. Uppercase roles track .04-.1em; plain captions are 500 sentence case." }
+    },
+    "shadows": [
+      { "name": "sheet-drop", "value": "0 14px 34px -10px rgba(0, 0, 0, .3)", "purpose": "Menu sheet opened from the title bar." },
+      { "name": "drag-lift", "value": "0 16px 30px -10px rgba(0, 0, 0, .35)", "purpose": "A step row while being dragged; removed on drop." },
+      { "name": "tab-on-rule", "value": "inset 0 2px 0 var(--red)", "purpose": "The 2px red top rule on the active bottom tab (not a depth cue)." }
+    ],
+    "motion": [
+      { "name": "band-shift", "value": "background-color .4s cubic-bezier(.16, 1, .3, 1)", "purpose": "The only transition: the current band moving between departure rows. Disabled under prefers-reduced-motion." },
+      { "name": "lamp-snap", "value": "none", "purpose": "Lamp state changes (ring, disc, tick, halo) toggle display with no animation." }
+    ],
+    "breakpoints": [
+      { "name": "wide", "value": "720px" }
+    ],
+    "sizes": [
+      { "name": "control", "value": "46px", "purpose": "Buttons, inputs, selects, checkbox label min-height." },
+      { "name": "control-small", "value": "38px", "purpose": "Small buttons in shift-time and dish-move rows." },
+      { "name": "row", "value": "60px", "purpose": "Departure row min-height and bottom tab bar height." },
+      { "name": "chip", "value": "34px", "purpose": "The Cook chip on the home board." },
+      { "name": "lamp", "value": "24px", "purpose": "Lamp SVG, in a 64px well." },
+      { "name": "wrap", "value": "680px", "purpose": "Concourse content width." },
+      { "name": "cook", "value": "820px", "purpose": "Cook board width." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one red action per form or sheet.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Put it on the board</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0 14px; height: 46px; border-radius: 6px; border: 1px solid var(--line, #d7d7d3); background: var(--paper, #ffffff); color: var(--ink, #141414); cursor: pointer; white-space: nowrap; font: 700 0.9375rem/1 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; letter-spacing: .05em; } .ds-btn:hover { border-color: var(--muted, #6a6a67); } .ds-btn:focus-visible { outline: 2px solid var(--red, #d8232a); outline-offset: 2px; } .ds-btn-primary { background: var(--red, #d8232a); color: var(--red-ink, #ffffff); border-color: var(--red, #d8232a); } .ds-btn-primary:hover { background: var(--red-hover, #e5333a); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "White-and-rule control for every non-primary action.",
+      "html": "<button class=\"ds-btn\">Copy for next week</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0 14px; height: 46px; border-radius: 6px; border: 1px solid var(--line, #d7d7d3); background: var(--paper, #ffffff); color: var(--ink, #141414); cursor: pointer; white-space: nowrap; font: 700 0.9375rem/1 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; letter-spacing: .05em; } .ds-btn:hover { border-color: var(--muted, #6a6a67); } .ds-btn:focus-visible { outline: 2px solid var(--red, #d8232a); outline-offset: 2px; } .ds-btn:disabled { opacity: .5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Danger Button (small)",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Secondary button with danger-red text, at the 38px small height, for Remove and Delete.",
+      "html": "<button class=\"ds-btn ds-btn-small ds-btn-danger\">Remove</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0 14px; height: 46px; border-radius: 6px; border: 1px solid var(--line, #d7d7d3); background: var(--paper, #ffffff); color: var(--ink, #141414); cursor: pointer; white-space: nowrap; font: 700 0.9375rem/1 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; letter-spacing: .05em; } .ds-btn:hover { border-color: var(--muted, #6a6a67); } .ds-btn:focus-visible { outline: 2px solid var(--red, #d8232a); outline-offset: 2px; } .ds-btn-small { height: 38px; padding: 0 10px; } .ds-btn-danger { color: var(--danger, #b42318); }"
+    },
+    {
+      "name": "Labelled Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Uppercase muted label over a 46px white field with a red caret and focus ring.",
+      "html": "<label class=\"ds-label\">Serve at<input class=\"ds-input\" type=\"time\" value=\"18:00\"></label>",
+      "css": ".ds-label { display: block; font: 700 0.9375rem/1.35 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif; color: var(--muted, #6a6a67); text-transform: uppercase; letter-spacing: .06em; } .ds-input { display: block; width: 100%; margin-top: 6px; padding: 0 12px; height: 46px; border: 1px solid var(--line, #d7d7d3); border-radius: 6px; background: var(--field, #ffffff); color: var(--ink, #141414); font: 500 1.1875rem/1.35 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif; font-variant-numeric: tabular-nums lining-nums; caret-color: var(--red, #d8232a); color-scheme: light; } .ds-input:hover { border-color: var(--muted, #6a6a67); } .ds-input:focus-visible { outline: 2px solid var(--red, #d8232a); outline-offset: 2px; } .ds-input::placeholder { color: var(--muted, #6a6a67); }"
+    },
+    {
+      "name": "Bottom Tabs",
+      "kind": "nav",
+      "refersTo": "tabs",
+      "description": "Two-tab fixed white bar; the active tab is red with a 2px inset top rule.",
+      "html": "<nav class=\"ds-tabs\"><a href=\"#\">Steps</a><a class=\"ds-on\" href=\"#\">Cook</a></nav>",
+      "css": ".ds-tabs { display: flex; height: 60px; background: var(--paper, #ffffff); border-top: 1px solid var(--board-line, #e4e4e0); } .ds-tabs a { flex: 1; display: flex; align-items: center; justify-content: center; text-decoration: none; color: var(--muted, #6a6a67); font: 700 0.9375rem/1 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; letter-spacing: .1em; } .ds-tabs a:focus-visible { outline: 2px solid var(--red, #d8232a); outline-offset: -4px; } .ds-tabs a.ds-on { color: var(--red, #d8232a); box-shadow: inset 0 2px 0 var(--red, #d8232a); }"
+    },
+    {
+      "name": "Platform Box",
+      "kind": "chip",
+      "refersTo": "platform-box",
+      "description": "A place as a boxed word; Hands-on is the black-filled variant.",
+      "html": "<span class=\"ds-cap\"><span class=\"ds-platform\">Oven 1</span> <span class=\"ds-platform ds-hands\">Hands-on</span></span>",
+      "css": ".ds-cap { display: inline-flex; gap: 8px; align-items: center; color: var(--board-dim, #7a7a76); background: var(--board, #ffffff); border: 1px solid var(--board-line, #e4e4e0); padding: 10px 14px; border-radius: 8px; } .ds-platform { display: inline-block; border: 1.5px solid currentColor; border-radius: 3px; padding: 0 6px; font: 700 0.9375rem/1.4 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; letter-spacing: .04em; } .ds-platform.ds-hands { background: var(--ink, #141414); color: var(--paper, #ffffff); border-color: var(--ink, #141414); }"
+    },
+    {
+      "name": "Cook Chip",
+      "kind": "chip",
+      "refersTo": "chip-cook",
+      "description": "Outlined red shortcut on a home-board row; fills red on hover.",
+      "html": "<span class=\"ds-chip-wrap\"><a class=\"ds-chip\" href=\"#\">Cook</a></span>",
+      "css": ".ds-chip-wrap { display: inline-block; background: var(--board, #ffffff); border: 1px solid var(--board-line, #e4e4e0); padding: 12px 14px; border-radius: 8px; } .ds-chip { display: inline-flex; align-items: center; height: 34px; padding: 0 10px; border: 1.5px solid var(--red, #d8232a); color: var(--red, #d8232a); border-radius: 4px; text-decoration: none; font: 700 0.9375rem/1 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif; text-transform: uppercase; letter-spacing: .06em; } .ds-chip:hover { background: var(--red, #d8232a); color: var(--red-ink, #ffffff); } .ds-chip:focus-visible { outline: 2px solid var(--red, #d8232a); outline-offset: 2px; }"
+    },
+    {
+      "name": "Departure Board",
+      "kind": "card",
+      "refersTo": "departure-row",
+      "description": "The signature: a white board of departure rows in done, late, current, running and waiting states with lamps and state words, ending in the black serve row.",
+      "html": "<ol class=\"ds-board\"><li class=\"ds-tl ds-done\"><span class=\"ds-dep\"><span class=\"ds-t\">20:47</span><span class=\"ds-main\"><span class=\"ds-name\">Preheat oven 1</span><span class=\"ds-cap\"><span>Beef</span><span class=\"ds-platform\">Oven 1</span><span>15 min · until 21:02</span></span></span><span class=\"ds-lamp-wrap\"><svg class=\"ds-lamp\" viewBox=\"0 0 24 24\"><circle class=\"ds-glow\" cx=\"12\" cy=\"12\" r=\"12\"/><circle class=\"ds-ring\" cx=\"12\" cy=\"12\" r=\"7\"/><circle class=\"ds-dot\" cx=\"12\" cy=\"12\" r=\"8\"/><path class=\"ds-tick\" d=\"M8.2 12.2 10.8 14.8 15.8 9.4\"/></svg><span class=\"ds-state\">Done</span></span></span></li><li class=\"ds-tl ds-current\"><span class=\"ds-dep\"><span class=\"ds-t\">22:02</span><span class=\"ds-main\"><span class=\"ds-name\">Rest the batter</span><span class=\"ds-cap\"><span>Yorkshire puddings</span><span>30 min · until 22:32</span></span><span class=\"ds-countdown\">1:37 left</span></span><span class=\"ds-lamp-wrap\"><svg class=\"ds-lamp\" viewBox=\"0 0 24 24\"><circle class=\"ds-glow\" cx=\"12\" cy=\"12\" r=\"12\"/><circle class=\"ds-ring\" cx=\"12\" cy=\"12\" r=\"7\"/><circle class=\"ds-dot\" cx=\"12\" cy=\"12\" r=\"8\"/><path class=\"ds-tick\" d=\"M8.2 12.2 10.8 14.8 15.8 9.4\"/></svg><span class=\"ds-state\">Now</span></span></span></li><li class=\"ds-tl ds-overdue\"><span class=\"ds-dep\"><span class=\"ds-t\">22:02</span><span class=\"ds-main\"><span class=\"ds-name\">Heat the fat in the tin</span><span class=\"ds-cap\"><span>Roast potatoes</span><span class=\"ds-platform\">Oven 1</span><span>10 min · until 22:12</span></span><span class=\"ds-countdown\">late by 18:27</span></span><span class=\"ds-lamp-wrap\"><svg class=\"ds-lamp\" viewBox=\"0 0 24 24\"><circle class=\"ds-glow\" cx=\"12\" cy=\"12\" r=\"12\"/><circle class=\"ds-ring\" cx=\"12\" cy=\"12\" r=\"7\"/><circle class=\"ds-dot\" cx=\"12\" cy=\"12\" r=\"8\"/><path class=\"ds-tick\" d=\"M8.2 12.2 10.8 14.8 15.8 9.4\"/></svg><span class=\"ds-state\">Late</span></span></span></li><li class=\"ds-tl ds-running\"><span class=\"ds-dep\"><span class=\"ds-t\">22:12</span><span class=\"ds-main\"><span class=\"ds-name\">Roast</span><span class=\"ds-cap\"><span>Roast potatoes</span><span class=\"ds-platform\">Oven 1</span><span>1 h · until 23:12</span></span><span class=\"ds-countdown\">59:30 left</span></span><span class=\"ds-lamp-wrap\"><svg class=\"ds-lamp\" viewBox=\"0 0 24 24\"><circle class=\"ds-glow\" cx=\"12\" cy=\"12\" r=\"12\"/><circle class=\"ds-ring\" cx=\"12\" cy=\"12\" r=\"7\"/><circle class=\"ds-dot\" cx=\"12\" cy=\"12\" r=\"8\"/><path class=\"ds-tick\" d=\"M8.2 12.2 10.8 14.8 15.8 9.4\"/></svg><span class=\"ds-state\">Now</span></span></span></li><li class=\"ds-tl\"><span class=\"ds-dep\"><span class=\"ds-t\">22:32</span><span class=\"ds-main\"><span class=\"ds-name\">Carve</span><span class=\"ds-cap\"><span>Beef</span><span class=\"ds-platform ds-hands\">Hands-on</span><span>10 min · until 22:42</span></span><span class=\"ds-countdown\">in 2:00</span></span><span class=\"ds-lamp-wrap\"><svg class=\"ds-lamp\" viewBox=\"0 0 24 24\"><circle class=\"ds-glow\" cx=\"12\" cy=\"12\" r=\"12\"/><circle class=\"ds-ring\" cx=\"12\" cy=\"12\" r=\"7\"/><circle class=\"ds-dot\" cx=\"12\" cy=\"12\" r=\"8\"/><path class=\"ds-tick\" d=\"M8.2 12.2 10.8 14.8 15.8 9.4\"/></svg><span class=\"ds-state\">Waiting</span></span></span></li><li class=\"ds-tl ds-serve\"><span class=\"ds-dep\"><span class=\"ds-t\">23:12</span><span class=\"ds-main\"><span class=\"ds-name\">Dinner is served</span></span></span></li></ol>",
+      "css": ".ds-board { list-style: none; margin: 0; padding: 0; background: var(--board, #ffffff); color: var(--board-ink, #141414); border: 1px solid var(--board-line, #e4e4e0); border-radius: 8px; overflow: hidden; font-family: 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif; font-variant-numeric: tabular-nums lining-nums; } .ds-tl + .ds-tl { border-top: 1px solid var(--board-line, #e4e4e0); } .ds-dep { display: grid; grid-template-columns: max-content 1fr 64px; gap: 0 12px; align-items: center; padding: 12px 14px; min-height: 60px; cursor: pointer; transition: background-color .4s cubic-bezier(.16, 1, .3, 1); } .ds-dep:hover { background: rgba(0,0,0,.025); } .ds-t { font-size: 1.75rem; font-weight: 700; line-height: 1; color: var(--board-dim, #7a7a76); } .ds-main { min-width: 0; display: grid; gap: 3px; } .ds-name { font-size: 1.1875rem; font-weight: 700; line-height: 1.2; color: var(--board-dim, #7a7a76); } .ds-cap { font-size: 0.9375rem; font-weight: 500; color: var(--board-dim, #7a7a76); display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; } .ds-platform { display: inline-block; border: 1.5px solid currentColor; border-radius: 3px; padding: 0 6px; line-height: 1.4; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; } .ds-platform.ds-hands { background: var(--ink, #141414); color: var(--paper, #ffffff); border-color: var(--ink, #141414); } .ds-countdown { font-size: 0.9375rem; font-weight: 500; color: var(--board-dim, #7a7a76); } .ds-lamp-wrap { display: grid; justify-items: center; gap: 3px; } .ds-lamp { width: 24px; height: 24px; display: block; overflow: visible; } .ds-ring { fill: none; stroke: var(--board-dim, #7a7a76); stroke-width: 2; } .ds-dot, .ds-tick, .ds-glow { display: none; } .ds-glow { fill: var(--red, #d8232a); opacity: .18; } .ds-tick { fill: none; stroke: var(--paper, #ffffff); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; } .ds-state { font-size: 0.9375rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; color: var(--board-dim, #7a7a76); line-height: 1; } .ds-current .ds-dep { background: var(--board-lit, #fdeaea); } .ds-current .ds-t, .ds-current .ds-name, .ds-running .ds-t, .ds-running .ds-name, .ds-overdue .ds-t, .ds-overdue .ds-name { color: var(--board-ink, #141414); } .ds-current .ds-cap, .ds-running .ds-cap { color: #3a3a38; } .ds-current .ds-countdown, .ds-current .ds-state, .ds-overdue .ds-countdown, .ds-overdue .ds-state { color: var(--red, #d8232a); } .ds-current .ds-ring { display: none; } .ds-current .ds-dot { display: block; fill: var(--red, #d8232a); } .ds-current .ds-glow, .ds-overdue .ds-glow { display: block; } .ds-running .ds-state, .ds-running .ds-countdown { color: var(--board-ink, #141414); } .ds-running .ds-ring { stroke: var(--board-ink, #141414); stroke-width: 3; } .ds-overdue .ds-ring { stroke: var(--red, #d8232a); stroke-width: 3; } .ds-done .ds-t, .ds-done .ds-name, .ds-done .ds-cap, .ds-done .ds-state { color: var(--board-dim, #7a7a76); opacity: .75; } .ds-done .ds-name { text-decoration: line-through; text-decoration-thickness: 1.5px; } .ds-done .ds-ring { display: none; } .ds-done .ds-dot { display: block; fill: var(--board-dim, #7a7a76); } .ds-done .ds-tick { display: block; } .ds-serve .ds-dep { grid-template-columns: max-content 1fr; background: var(--ink, #141414); color: var(--paper, #ffffff); cursor: default; } .ds-serve .ds-t, .ds-serve .ds-name { color: var(--paper, #ffffff); } @media (prefers-reduced-motion: reduce) { .ds-dep { transition: none; } }"
+    },
+    {
+      "name": "Clock Row",
+      "kind": "custom",
+      "refersTo": "board",
+      "description": "Sticky three-column clock: Start and Serve at 28px flank Now at 44px, all black on white.",
+      "html": "<div class=\"ds-clock\"><div class=\"ds-clock-row\"><div><span class=\"ds-k\">Start</span><strong>20:47</strong></div><div class=\"ds-big\"><span class=\"ds-k\">Now</span><strong>22:30</strong></div><div><span class=\"ds-k\">Serve</span><strong>23:12</strong></div></div><p class=\"ds-next\">Now: <strong>Rest the batter</strong> · next in <strong>1:37</strong></p></div>",
+      "css": ".ds-clock { background: var(--board, #ffffff); color: var(--board-ink, #141414); border: 1px solid var(--board-line, #e4e4e0); border-width: 0 0 1px; padding: 12px 16px 10px; font-family: 'Barlow Semi Condensed', 'Arial Narrow', Arial, sans-serif; font-variant-numeric: tabular-nums lining-nums; } .ds-clock-row { display: grid; grid-template-columns: 1fr 1.3fr 1fr; align-items: end; text-align: center; } .ds-k { display: block; font-size: 0.9375rem; font-weight: 500; text-transform: uppercase; letter-spacing: .1em; color: var(--board-dim, #7a7a76); } .ds-clock-row strong { display: block; font-size: 1.75rem; line-height: 1.05; font-weight: 700; } .ds-big strong { font-size: 2.75rem; } .ds-big .ds-k { color: var(--board-ink, #141414); } .ds-next { margin: 10px 0 0; text-align: center; color: var(--board-dim, #7a7a76); font-size: 1.1875rem; font-weight: 500; } .ds-next strong { color: var(--board-ink, #141414); font-weight: 700; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Station Departure Board",
+    "overview": "The dinner is one departure board. Every step is a row: a time on the left, what and where in the middle, a lamp and a one-word status on the right. The board is a white enamel field with black tabular numerals and grey captions, like the mechanical timer on the kitchen shelf; it is one object in one finish, day and night, and does not follow the phone's colour scheme. Around the board sits the concourse: a light grey ground with ruled white forms. The two materials are close cousins (white on grey) and are told apart by the 1px rule and the 8px corner, not by contrast.\n\nOne typeface (Barlow Semi Condensed, self-hosted at 500 and 700) at four fixed sizes does all the work. Hierarchy is carried by size, weight and ink-versus-grey, not by colour or ornament. Red is the only hue and it is reserved: on the board it means NOW or LATE (the lamp, the state word, the countdown); on the concourse it means the one primary action. Late is a word and a lit ring, never an alarm.\n\nThe system is dense but glanceable. Rows are 60px tall with 28px times so the current step reads from a metre away; captions and controls sit at 15px because they are read at arm's length. Motion is nearly absent: the current band fades in over 0.4s, lamps snap between states, nothing pulses. Icons are inline SVG strokes only; the app icon shares the same three materials (white face, black hands, one red hand).",
+    "keyCharacteristics": [
+      "White board on a light grey concourse, one scheme in both OS modes",
+      "One face, four sizes (15 / 19 / 28 / 44), tabular lining numerals everywhere",
+      "One red, reserved for NOW, LATE, countdowns and the primary action",
+      "Status as a lamp plus a spelled-out word; colour never carries meaning alone",
+      "Platform-style boxes for Oven 1, Oven 2, Hob, and a black-filled Hands-on",
+      "Ruled 1px dividers, no shadows at rest, no decorative imagery"
+    ],
+    "rules": [
+      { "name": "The Red Reservation Rule", "body": "On the board, red means one of two words: NOW or LATE. On the concourse it means the single primary action. Destructive text is danger, not red. Any third meaning dilutes the lamp.", "section": "colors" },
+      { "name": "The One Scheme Rule", "body": "color-scheme: light is declared and there is no prefers-color-scheme block. The board and the concourse look the same on a phone in dark mode as in light; the four review captures were taken with the OS in dark mode to prove it. Native controls (date and time pickers) follow suit.", "section": "colors" },
+      { "name": "The Spelled-Out Rule", "body": "No status, place or hands-on flag is carried by colour alone. Every lamp has its word; every place has its box with the name in it.", "section": "colors" },
+      { "name": "The Four Sizes Rule", "body": "15, 19, 28, 44. A new surface picks from these; it does not add a fifth.", "section": "typography" },
+      { "name": "The Tabular Rule", "body": "Every number is tabular lining. Times are 700; a unit or suffix beside a number drops to 500 and 15px (the min after minutes in the editor).", "section": "typography" },
+      { "name": "The Uppercase-Is-Small Rule", "body": "Uppercase is only ever at 15px with tracking, and only for labels, states, boxes, buttons and heads. Body copy and names are sentence case; the one exception is dish headings on the editor board (19px uppercase), which act as section heads of a board.", "section": "typography" },
+      { "name": "The Lifted-Only Rule", "body": "A shadow appears only while something is physically above the page (an open sheet, a dragged row). Nothing at rest is shadowed.", "section": "elevation" },
+      { "name": "The One Band Rule", "body": "Exactly one row on the cook board sits on board-lit at any moment: the current step (the hands-on one when several run at once, else the one ending soonest). Other running steps darken to board-ink type but stay on the white field. A late step keeps the field and lights its ring red; it only takes the band if nothing else is current.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do put every list of timed things on a white board as departure rows with a 28px time, a name and a right-hand status; the home page's plans list uses the same row as the cook timeline.",
+      "Do keep one light scheme; do not add a prefers-color-scheme block or per-scheme tokens.",
+      "Do spell out every state, place and hands-on flag as a word inside a box or beside a lamp; colour is reinforcement.",
+      "Do pick from 15 / 19 / 28 / 44 and from 700 / 500 only; set numbers tabular.",
+      "Do separate rows with 1px rules and lift only what is physically above the page (sheet, drag).",
+      "Do keep controls 46px tall (38px small) with 6px corners, and make the whole row the tap target.",
+      "Do self-host every asset; one stylesheet, one script, no CDN."
+    ],
+    "donts": [
+      "Don't use red for a third meaning. On the board it is NOW or LATE; on the concourse it is the one primary action. Destructive text uses danger.",
+      "Don't pulse a lamp, sound the board, or animate anything other than the current band's background.",
+      "Don't put more than one row on board-lit at a time.",
+      "Don't add a fifth type size, a second typeface, or a system display face.",
+      "Don't shadow a surface at rest, or round a corner past 8px.",
+      "Don't introduce photos, illustrations or icon fonts; the only icons are inline SVG strokes (chevrons, dots, plus, drag handle, lamp)."
+    ]
+  }
+}

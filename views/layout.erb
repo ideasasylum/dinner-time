@@ -1,0 +1,33 @@
+<%# locals: (content:, title: "Dinner Time", board: false) %>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="csrf-token" content="<%= csrf_token %>">
+<meta name="theme-color" content="<%= board ? "#ffffff" : "#ececea" %>">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Dinner Time">
+<title><%= title == app_title ? title : "#{title} · #{app_title}" %></title>
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="preload" href="/fonts/barlow-sc-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/barlow-sc-500.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/app.css">
+</head>
+<body class="<%= board ? "board-page" : "" %>">
+<!--
+THESIS: The whole dinner is one departure board: time, what, where, status, read from a metre away. It refuses the card-list-with-checkboxes every timer and recipe app ships.
+OWN-WORLD: A kitchen timer: white enamel board, black tabular numerals, grey captions, one red lamp for NOW and LATE, and platform-style boxes for Oven 1, Oven 2 and Hob. One grotesk (Barlow Semi Condensed) at four fixed sizes. One light scheme day and night; around the board, a light grey ground with ruled forms. Chosen by Jamie from three finishes on 2026-09-19.
+STORY: The cook glances, finds the one lit row, does that thing, taps its lamp; the board dims it and lights the next. Late is a word and a lamp, never an alarm.
+FIRST VIEWPORT: Cook page. A sticky clock row across the top of the board: Now in 44px numerals, Start and Serve beside it in 28px, because three 44px times do not fit a phone and Now is the one read from a metre; below it the departures, one per step: 28px time at the left, step name and a caption of dish, platform box and end time, a lamp and its word at the right. The current row sits on a pale red band and is the only black-ink row among grey ones.
+FORM: Station departure board, candidate 3 of 7 on the grounded list; seed 6f2fdeab.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
+-->
+<%== content %>
+<script src="/app.js" defer></script>
+</body>
+</html>

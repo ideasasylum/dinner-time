@@ -1,0 +1,8 @@
+# The compiler's manifest. `.melee/stdlib` is a link the build step keeps pointing at the melee library the
+# `melee` command carries, so this file is the same on every machine and never needs editing.
+[package]
+name = "dinner"
+version = "0.1.0"
+
+[dependencies]
+melee = { path = ".melee/stdlib" }

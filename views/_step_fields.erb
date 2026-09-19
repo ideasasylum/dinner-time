@@ -1,0 +1,14 @@
+<%# locals: (places:, name: "", minutes: 10, place: "", hands: 0) %>
+<label>Step <input type="text" name="name" value="<%= name %>" placeholder="Put the beef in" required autocomplete="off"></label>
+<div class="row">
+  <label>Minutes <input type="number" name="minutes" value="<%= minutes %>" min="0" max="1440" inputmode="numeric" required></label>
+  <label>Where
+    <select name="place">
+      <option value="" <%= place == "" ? "selected" : "" %>>Anywhere</option>
+      <% places.each do |pl| %>
+        <option value="<%= pl %>" <%= place == pl ? "selected" : "" %>><%= place_label(pl) %></option>
+      <% end %>
+    </select>
+  </label>
+</div>
+<label class="check"><input type="checkbox" name="hands" value="1" <%= hands.to_i == 1 ? "checked" : "" %>> I'm hands-on for this</label>

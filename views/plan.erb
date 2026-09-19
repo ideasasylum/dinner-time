@@ -1,0 +1,110 @@
+<%# locals: (plan:, dishes:, steps:) %>
+<header class="bar">
+  <a class="back" href="/" aria-label="All plans"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  <h1><%= plan["name"] %></h1>
+  <details class="menu">
+    <summary aria-label="Plan settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="19" cy="12" r="2" fill="currentColor"/></svg></summary>
+    <div class="sheet">
+      <form method="post" action="/plans/<%= plan["id"] %>" class="stack" data-tz>
+        <%= csrf_field %>
+        <input type="hidden" name="tz" value="<%= plan["tz_offset"] %>">
+        <label>Name <input type="text" name="name" value="<%= plan["name"] %>" required></label>
+        <div class="row">
+          <label>Day <input type="date" name="date" value="<%= serve_ymd(plan) %>" required></label>
+          <label>Serve at <input type="time" name="time" value="<%= hhmm(plan["serve_at"], plan) %>" required></label>
+        </div>
+        <button class="btn primary">Save</button>
+      </form>
+      <form method="post" action="/plans/<%= plan["id"] %>/duplicate"><%= csrf_field %><button class="btn">Copy for next week</button></form>
+      <form method="post" action="/plans/<%= plan["id"] %>/delete" data-confirm="Delete this whole plan?"><%= csrf_field %><button class="btn danger">Delete plan</button></form>
+    </div>
+  </details>
+</header>
+
+<main class="wrap" id="plan" data-plan="<%= plan["id"] %>">
+  <p class="serve-line">Serving <strong><%= day_label(plan) %> at <%= hhmm(plan["serve_at"], plan) %></strong></p>
+
+  <% if dishes.empty? %>
+    <p class="empty">No dishes yet. Add one below.</p>
+  <% end %>
+
+  <div class="dishes">
+  <% dishes.each do |dish| %>
+    <section class="dish board" id="dish-<%= dish["id"] %>" data-dish="<%= dish["id"] %>">
+      <div class="dish-head">
+        <details class="inline">
+          <summary><h2><%= dish["name"] %></h2><span class="edit-mark">Edit</span></summary>
+          <div class="dish-form">
+            <form method="post" action="/plans/<%= plan["id"] %>/dishes/<%= dish["id"] %>" class="row">
+              <%= csrf_field %>
+              <input type="text" name="name" value="<%= dish["name"] %>" required aria-label="Dish name">
+              <button class="btn">Rename</button>
+            </form>
+            <div class="row">
+              <form method="post" action="/plans/<%= plan["id"] %>/dishes/<%= dish["id"] %>/move"><%= csrf_field %><input type="hidden" name="dir" value="up"><button class="btn small">Move up</button></form>
+              <form method="post" action="/plans/<%= plan["id"] %>/dishes/<%= dish["id"] %>/move"><%= csrf_field %><input type="hidden" name="dir" value="down"><button class="btn small">Move down</button></form>
+              <form method="post" action="/plans/<%= plan["id"] %>/dishes/<%= dish["id"] %>/delete" data-confirm="Delete this dish and its steps?"><%= csrf_field %><button class="btn small danger">Delete</button></form>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <ol class="steps" data-dish="<%= dish["id"] %>">
+        <% steps.select { |s| s["dish_id"] == dish["id"] }.each do |s| %>
+          <li class="step" id="step-<%= s["id"] %>" data-step="<%= s["id"] %>">
+            <details>
+              <summary>
+                <span class="dep">
+                  <span class="handle" aria-label="Drag to reorder"><svg viewBox="0 0 16 22" aria-hidden="true"><g fill="currentColor"><circle cx="5" cy="5" r="1.6"/><circle cx="11" cy="5" r="1.6"/><circle cx="5" cy="11" r="1.6"/><circle cx="11" cy="11" r="1.6"/><circle cx="5" cy="17" r="1.6"/><circle cx="11" cy="17" r="1.6"/></g></svg></span>
+                  <span class="main">
+                    <span class="name"><%= s["name"] %></span>
+                    <% if s["place"].to_s != "" || s["hands"].to_i == 1 %>
+                    <span class="cap">
+                      <% if s["place"].to_s != "" %><span class="platform"><%= place_label(s["place"].to_s) %></span><% end %>
+                      <% if s["hands"].to_i == 1 %><span class="platform hands">Hands-on</span><% end %>
+                    </span>
+                    <% end %>
+                  </span>
+                  <span class="mins"><%= s["minutes"].to_i %><small>min</small></span>
+                </span>
+              </summary>
+              <form method="post" action="/plans/<%= plan["id"] %>/steps/<%= s["id"] %>" class="stack edit">
+                <%= csrf_field %>
+                <%= partial :step_fields, places: PLACES, name: s["name"].to_s, minutes: s["minutes"].to_i, place: s["place"].to_s, hands: s["hands"].to_i %>
+                <div class="row">
+                  <button class="btn primary">Save</button>
+                  <button class="btn danger" form="del-<%= s["id"] %>">Delete</button>
+                </div>
+              </form>
+              <form method="post" action="/plans/<%= plan["id"] %>/steps/<%= s["id"] %>/delete" id="del-<%= s["id"] %>"><%= csrf_field %></form>
+            </details>
+          </li>
+        <% end %>
+      </ol>
+      <p class="chain-note">Finished at <%= hhmm(plan["serve_at"], plan) %></p>
+
+      <details class="add">
+        <summary><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Add a step</summary>
+        <form method="post" action="/plans/<%= plan["id"] %>/dishes/<%= dish["id"] %>/steps" class="stack">
+          <%= csrf_field %>
+          <%= partial :step_fields, places: PLACES %>
+          <button class="btn primary">Add step</button>
+        </form>
+      </details>
+    </section>
+  <% end %>
+  </div>
+
+  <section class="card add-dish">
+    <form method="post" action="/plans/<%= plan["id"] %>/dishes" class="row">
+      <%= csrf_field %>
+      <label>New dish <input type="text" name="name" placeholder="Gravy" required></label>
+      <button class="btn">Add dish</button>
+    </form>
+  </section>
+</main>
+
+<nav class="tabs">
+  <a class="on" href="/plans/<%= plan["id"] %>">Steps</a>
+  <a href="/plans/<%= plan["id"] %>/cook">Cook</a>
+</nav>

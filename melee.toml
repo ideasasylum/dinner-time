@@ -1,0 +1,8 @@
+# melee app configuration. `melee push` sends this directory to `server`; the app answers at `url`.
+# The app is named `dinner` because melee-server routes <app>.<domain>, and the domain is apps.ideasasylum.com.
+# `server` is the loopback end of `ssh -N -L 7071:127.0.0.1:7070 root@<box>`; the control API is not public.
+# The control API needs a token: MELEE_TOKEN, else a `token_file` path here (outside this directory,
+# since everything in it is uploaded by `melee push`).
+name = "dinner"
+server = "http://127.0.0.1:7071"
+url = "https://dinner.apps.ideasasylum.com"

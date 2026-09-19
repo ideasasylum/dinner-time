@@ -1,0 +1,70 @@
+<%# locals: (plans:, devices:, notice:) %>
+<header class="bar">
+  <h1>Dinner Time</h1>
+</header>
+<main class="wrap">
+  <% unless notice.empty? %><p class="notice"><%= notice %></p><% end %>
+
+  <% if plans.empty? %>
+    <section class="board plans">
+      <div class="board-head"><span>Departures</span><span>No dinners planned</span></div>
+      <p class="board-empty">Your first dinner goes on the board below.</p>
+    </section>
+  <% else %>
+    <section class="board plans">
+      <div class="board-head"><span>Departures</span><strong><%= plans.size %> dinner<%= plans.size == 1 ? "" : "s" %></strong></div>
+      <ol class="rows">
+        <% plans.each do |p| %>
+          <li>
+            <a class="dep" href="/plans/<%= p["id"] %>">
+              <span class="t"><%= hhmm(p["serve_at"], p) %></span>
+              <span class="main">
+                <span class="name"><%= p["name"] %></span>
+                <span class="cap"><span class="when"><%= day_label(p) %></span></span>
+              </span>
+              <span class="go" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M7.5 4l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </a>
+            <a class="chip" href="/plans/<%= p["id"] %>/cook">Cook</a>
+          </li>
+        <% end %>
+      </ol>
+    </section>
+  <% end %>
+
+  <section class="card">
+    <h2>New dinner</h2>
+    <form method="post" action="/plans" class="stack" data-tz>
+      <%= csrf_field %>
+      <input type="hidden" name="tz" value="0">
+      <label>Name <input type="text" name="name" placeholder="Sunday roast" autocomplete="off"></label>
+      <div class="row">
+        <label>Day <input type="date" name="date" required data-default-date></label>
+        <label>Serve at <input type="time" name="time" value="18:00" required></label>
+      </div>
+      <label class="check"><input type="checkbox" name="preset" value="roast" checked> Start from a Sunday roast</label>
+      <button class="btn primary">Put it on the board</button>
+    </form>
+  </section>
+
+  <section class="card" id="alerts">
+    <h2>Phone alerts</h2>
+    <p class="hint">Every step's alert is sent from the server as a native notification, so it reaches you with the screen off. On an iPhone, add the app to your home screen first and enable alerts from there.</p>
+    <div class="row">
+      <button class="btn primary" type="button" data-notify data-label="Enable alerts on this device">Enable alerts on this device</button>
+      <% unless devices.empty? %><button class="btn" form="test-alert">Send a test</button><% end %>
+    </div>
+    <p class="hint" data-notify-status></p>
+    <% unless devices.empty? %>
+      <ul class="devices">
+        <% devices.each do |d| %>
+          <li>
+            <span><%= d["label"].to_s.empty? ? "A device" : d["label"] %></span>
+            <span class="muted"><%= d["last_status"].nil? ? "never sent" : (d["last_error"].to_s.empty? ? "last alert delivered" : "last send failed: #{d["last_error"]}") %></span>
+            <form method="post" action="/push/unsubscribe"><%= csrf_field %><input type="hidden" name="endpoint" value="<%= d["endpoint"] %>"><button class="btn small danger">Remove</button></form>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+    <form method="post" action="/push/test" id="test-alert"><%= csrf_field %></form>
+  </section>
+</main>
