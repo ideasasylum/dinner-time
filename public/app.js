@@ -91,6 +91,94 @@
     plan.addEventListener("click", e => { if (e.target.closest(".handle")) e.preventDefault(); });
   }
 
+  // ---- Passkeys: the two WebAuthn ceremonies ----
+  //
+  // Everything crossing the wire is base64url, because an ArrayBuffer does not survive a form post. The
+  // public key comes from getPublicKey() rather than out of the attestation object, which is what saves the
+  // server from decoding CBOR.
+  const bufToB64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const b64uToBuf = text => {
+    const padded = (text + "=".repeat((4 - text.length % 4) % 4)).replace(/-/g, "+").replace(/_/g, "/");
+    return Uint8Array.from(atob(padded), c => c.charCodeAt(0));
+  };
+  const deviceName = () => {
+    const ua = navigator.userAgent;
+    const device = /iPhone/.test(ua) ? "iPhone" : /iPad/.test(ua) ? "iPad" : /Android/.test(ua) ? "Android"
+      : /Mac/.test(ua) ? "Mac" : /Windows/.test(ua) ? "Windows" : "Browser";
+    const browser = /Firefox/.test(ua) ? "Firefox" : /Chrome|CriOS/.test(ua) ? "Chrome" : /Safari/.test(ua) ? "Safari" : "Browser";
+    return device + " · " + browser;
+  };
+  const authStatus = msg => $$("[data-auth-status]").forEach(el => { el.textContent = msg; });
+  const passkeysWork = window.PublicKeyCredential && navigator.credentials;
+
+  const enrol = async () => {
+    const res = await post("/auth/register/options", {});
+    if (!res.ok) throw new Error(await res.text());
+    const options = await res.json();
+    options.challenge = b64uToBuf(options.challenge);
+    options.user.id = b64uToBuf(options.user.id);
+    options.excludeCredentials = (options.excludeCredentials || []).map(c => ({ type: c.type, id: b64uToBuf(c.id) }));
+    const credential = await navigator.credentials.create({ publicKey: options });
+    const key = credential.response.getPublicKey && credential.response.getPublicKey();
+    if (!key) throw new Error("this browser cannot hand over the passkey's public key");
+    const done = await post("/auth/register", {
+      credential_id: bufToB64u(credential.rawId),
+      client_data: bufToB64u(credential.response.clientDataJSON),
+      authenticator_data: bufToB64u(credential.response.getAuthenticatorData()),
+      public_key: bufToB64u(key),
+      label: deviceName()
+    });
+    if (!done.ok) throw new Error(await done.text());
+  };
+
+  const signIn = async () => {
+    const res = await post("/auth/login/options", {});
+    if (!res.ok) throw new Error(await res.text());
+    const options = await res.json();
+    options.challenge = b64uToBuf(options.challenge);
+    const assertion = await navigator.credentials.get({ publicKey: options });
+    const done = await post("/auth/login", {
+      credential_id: bufToB64u(assertion.rawId),
+      client_data: bufToB64u(assertion.response.clientDataJSON),
+      authenticator_data: bufToB64u(assertion.response.authenticatorData),
+      signature: bufToB64u(assertion.response.signature),
+      user_handle: assertion.response.userHandle ? bufToB64u(assertion.response.userHandle) : ""
+    });
+    if (!done.ok) throw new Error(await done.text());
+  };
+
+  // A cancelled ceremony is the user changing their mind, not a failure worth shouting about.
+  const ceremony = async (work, done) => {
+    if (!passkeysWork) { authStatus("This browser cannot use passkeys."); return; }
+    try {
+      authStatus("");
+      await work();
+      done();
+    } catch (e) {
+      if (e && (e.name === "NotAllowedError" || e.name === "AbortError")) authStatus("Cancelled.");
+      else authStatus(String((e && e.message) || e).slice(0, 200));
+    }
+  };
+
+  const setupForm = $("form[data-setup]");
+  if (setupForm) setupForm.addEventListener("submit", e => {
+    e.preventDefault();
+    ceremony(async () => {
+      const claim = await post("/auth/setup", { secret: setupForm.secret.value, name: setupForm.name.value });
+      if (!claim.ok) throw new Error(await claim.text());
+      await enrol();
+    }, () => { location.href = "/"; });
+  });
+
+  const signInBtn = $("[data-signin]");
+  if (signInBtn) {
+    signInBtn.addEventListener("click", () => ceremony(signIn, () => { location.href = "/"; }));
+    if (passkeysWork) signInBtn.focus();
+  }
+
+  const addBtn = $("[data-add-passkey]");
+  if (addBtn) addBtn.addEventListener("click", () => ceremony(enrol, () => location.reload()));
+
   // ---- Push subscription: the native notifications come from the server ----
   let audio = null;
   const wakeAudio = () => { if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) {} } };

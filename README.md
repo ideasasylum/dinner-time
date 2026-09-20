@@ -44,6 +44,23 @@ word), one lit band for the step to do now, amber only for NOW and LATE and prim
 Semi Condensed, self-hosted in `public/fonts/`, at four sizes. The rules live in `DESIGN.md`; product truth in
 `PRODUCT.md`; the direction contract is the first comment in `views/layout.erb`.
 
+## Getting in
+
+Every page but the sign-in screen needs a passkey. The first one is claimed with a secret, because this
+app's address is public and "whoever registers first wins" would hand it to a stranger:
+
+```sh
+melee env SETUP_SECRET <something long>     # once, before the first visit
+```
+
+Then open the app, enter that secret, and make a passkey. Setup closes the moment a passkey exists; further
+devices are added from inside the signed-in app. An account with no passkey is not an account, so a ceremony
+that fails halfway leaves setup open rather than bricking the app.
+
+`lib/webauthn.rb` holds the ceremonies and knows nothing about users: it verifies the bytes and hands back
+the credential, the user handle and the signature counter. Passkeys are discoverable, so signing in names its
+own owner and nobody types a username, which is also what a multi-user version would need.
+
 ## Layout
 
 ```
@@ -53,8 +70,10 @@ lib/schedule.rb          the backwards scheduler (pure, tested)
 lib/clock.rb             time formatting in the browser's zone, no Date, no server TZ
 lib/alerts.rb            push subscriptions and the fan-out to every device
 lib/web_push.rb          RFC 8291 encryption and VAPID, over Melee::HTTP
+lib/webauthn.rb          the two passkey ceremonies, verified from the raw bytes
+lib/accounts.rb          who exists, whose passkeys those are, and the first-account rule
 lib/presets.rb           the Sunday roast starter plan
-db/migrations/           the plans index and push subscriptions
+db/migrations/           the plans index, push subscriptions, accounts and passkeys
 db/objects/plan/         each plan object's own tables
 views/                   index (plans, devices), plan (step editor), cook (timeline)
 public/app.js            drag to reorder, live timeline, push subscription, wake lock
@@ -66,9 +85,12 @@ test/app_test.rb         melee test, including firing the timer
 ## Run it
 
 ```sh
-melee dev              # CRuby, reload by restart, http://127.0.0.1:4567
-melee test             # test/app_test.rb under CRuby
-melee test --both      # the same file under CRuby and the compiled binary, diffed
+# WebAuthn refuses an IP address as a relying-party id, and `melee dev` reports a hardcoded
+# 127.0.0.1 whatever the browser asked for, so development is told what production works out:
+SETUP_SECRET=dev-secret WEBAUTHN_RP_ID=localhost WEBAUTHN_ORIGIN=http://localhost:4567 \
+  melee dev            # then open http://localhost:4567, not 127.0.0.1
+SETUP_SECRET=x melee test        # the suite signs in, so it needs a secret too
+SETUP_SECRET=x melee test --both # the same file under both runtimes, diffed
 melee check            # compile with Spinel, no deploy
 melee push             # deploy to the server in melee.toml
 melee objects Plan     # the plan objects and their pending timers

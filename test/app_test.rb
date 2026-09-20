@@ -1,14 +1,49 @@
 # frozen_string_literal: true
 # `melee test` runs this under CRuby; `melee test --spinel` runs it against the compiled binary.
+# Needs a setup secret, the same one the app wants in production: SETUP_SECRET=... melee test
 require_relative "../lib/clock"
 require_relative "../lib/schedule"
 require_relative "../lib/web_push"
-
-# GET /push/key answers with the VAPID public key, minted per database, so the two runtimes' transcripts would
-# never agree on that body without masking its shape.
-mask(/\AB[A-Za-z0-9_-]{86}\z/)
+require_relative "../lib/webauthn"
 
 TZ = -60 # British Summer Time, as a browser reports it
+
+# Every route but the login pages needs a passkey, so each case signs in first. The authenticator is a Ruby
+# key here; the bytes it produces are the ones a Secure Enclave would send, which is what makes this a test
+# of the verification rather than of a stub.
+TEST_KEY = OpenSSL::PKey::EC.generate("prime256v1")
+TEST_CREDENTIAL = B64.encode(SecureRandom.random_bytes(16))
+TEST_RP = "app.test"
+TEST_ORIGIN = "https://app.test"
+
+# Every ceremony mints fresh randomness — challenges, keys, credential ids, signatures, and the VAPID key —
+# so two runs can only be compared with those masked. Long unbroken base64url runs are exactly those values;
+# this app's own words are short and spaced, so a real difference in the bytes still shows.
+mask(/[A-Za-z0-9_-]{22,}/)
+
+setup do
+  get "/login"
+  enrol_passkey if body.include?("Claim this app")
+  sign_in_with_passkey
+end
+
+def enrol_passkey
+  post "/auth/setup", secret: ENV.fetch("SETUP_SECRET", ""), name: "Jamie"
+  post "/auth/register/options"
+  post "/auth/register",
+       credential_id: TEST_CREDENTIAL,
+       client_data: B64.encode(client_data("webauthn.create", JSON.parse(body)["challenge"], TEST_ORIGIN)),
+       authenticator_data: B64.encode(authenticator_data(TEST_RP, 0x45, 0)),
+       public_key: B64.encode(spki_for(TEST_KEY)),
+       label: "Test device"
+end
+
+def sign_in_with_passkey
+  post "/auth/login/options"
+  a = signed_assertion(TEST_KEY, TEST_RP, JSON.parse(body)["challenge"], TEST_ORIGIN, 0)
+  post "/auth/login", credential_id: TEST_CREDENTIAL, client_data: a["client"],
+                      authenticator_data: a["auth"], signature: a["sig"], user_handle: ""
+end
 
 def roast_dishes = [{ "id" => 1, "name" => "Beef", "position" => 0 }, { "id" => 2, "name" => "Gravy", "position" => 1 }]
 
@@ -270,4 +305,200 @@ test "bad input is refused" do
   get "/plans/999999"
   assert_equal 404, status
   assert body.include?("Not here")
+end
+
+# ---- passkeys ----
+#
+# The harness has no browser, so these build the bytes an authenticator would send and check that the
+# verification either accepts them or names the reason it will not. The signing key stands in for the one
+# living in a Secure Enclave; everything else is the real wire format.
+
+RP = "dinner.example"
+ORIGIN = "https://dinner.example"
+# A P-256 SubjectPublicKeyInfo is this fixed 26-byte preamble followed by the uncompressed point.
+SPKI_HEAD = ["3059301306072a8648ce3d020106082a8648ce3d030107034200"].pack("H*")
+
+def spki_for(key) = SPKI_HEAD + key.public_key_bytes
+
+def authenticator_data(rp_id, flags, count)
+  OpenSSL::Digest::SHA256.digest(rp_id) + flags.chr + [count].pack("N")
+end
+
+def client_data(type, challenge, origin)
+  %({"type":"#{type}","challenge":"#{challenge}","origin":"#{origin}","crossOrigin":false})
+end
+
+# The inverse of WebAuthn.raw_signature: what a browser actually puts on the wire.
+def der_signature(raw)
+  halves = [raw.byteslice(0, 32), raw.byteslice(32, 32)].map do |half|
+    from = 0
+    from += 1 while from < half.bytesize - 1 && half.getbyte(from).zero?
+    trimmed = half.byteslice(from, half.bytesize - from)
+    trimmed.getbyte(0) >= 0x80 ? "\x00" + trimmed : trimmed
+  end
+  body = halves.map { |h| "\x02" + h.bytesize.chr + h }.join
+  "\x30" + body.bytesize.chr + body
+end
+
+def signed_assertion(key, rp_id, challenge, origin, count)
+  auth = authenticator_data(rp_id, 0x05, count)
+  client = client_data("webauthn.get", challenge, origin)
+  raw = key.sign_raw("SHA256", auth + OpenSSL::Digest::SHA256.digest(client))
+  { "auth" => B64.encode(auth), "client" => B64.encode(client), "sig" => B64.encode(der_signature(raw)) }
+end
+
+test "a registration is accepted, and the key is stored in the shape the login will need" do
+  key = OpenSSL::PKey::EC.generate("prime256v1")
+  challenge = WebAuthn.challenge
+  result = WebAuthn.verify_registration(RP, ORIGIN, challenge,
+                                        B64.encode(client_data("webauthn.create", challenge, ORIGIN)),
+                                        B64.encode(authenticator_data(RP, 0x45, 0)),
+                                        B64.encode(spki_for(key)))
+  assert result["ok"], result["error"].to_s
+  assert_equal B64.encode(key.public_key_bytes), result["public_key"]
+  assert_equal 0, result["sign_count"]
+end
+
+test "a login signed by that key is accepted, and a DER signature survives the trip to raw r||s" do
+  key = OpenSSL::PKey::EC.generate("prime256v1")
+  challenge = WebAuthn.challenge
+  a = signed_assertion(key, RP, challenge, ORIGIN, 7)
+  result = WebAuthn.verify_assertion(RP, ORIGIN, challenge, a["client"], a["auth"], a["sig"],
+                                     B64.encode(key.public_key_bytes), 3)
+  assert result["ok"], result["error"].to_s
+  assert_equal 7, result["sign_count"]
+end
+
+test "signatures are checked over enough runs to catch a mangled half" do
+  # A DER integer drops leading zero bytes, so about one signature in 256 has a short half and one in 256
+  # carries an extra 0x00. Both shapes have to survive, which one run would not reliably show.
+  key = OpenSSL::PKey::EC.generate("prime256v1")
+  ok = 0
+  20.times do
+    challenge = WebAuthn.challenge
+    a = signed_assertion(key, RP, challenge, ORIGIN, 0)
+    ok += 1 if WebAuthn.verify_assertion(RP, ORIGIN, challenge, a["client"], a["auth"], a["sig"],
+                                         B64.encode(key.public_key_bytes), 0)["ok"]
+  end
+  assert_equal 20, ok
+end
+
+test "a login is refused when the ceremony was not this one" do
+  key = OpenSSL::PKey::EC.generate("prime256v1")
+  challenge = WebAuthn.challenge
+  good = B64.encode(key.public_key_bytes)
+
+  # another site relaying a ceremony here
+  a = signed_assertion(key, RP, challenge, "https://evil.example", 0)
+  assert_equal "that ceremony came from another site",
+               WebAuthn.verify_assertion(RP, ORIGIN, challenge, a["client"], a["auth"], a["sig"], good, 0)["error"]
+
+  # a challenge this app never issued
+  a = signed_assertion(key, RP, WebAuthn.challenge, ORIGIN, 0)
+  assert_equal "that challenge is not the one this app issued",
+               WebAuthn.verify_assertion(RP, ORIGIN, challenge, a["client"], a["auth"], a["sig"], good, 0)["error"]
+
+  # a passkey made for a different hostname
+  a = signed_assertion(key, "other.example", challenge, ORIGIN, 0)
+  assert_equal "that passkey belongs to another site",
+               WebAuthn.verify_assertion(RP, ORIGIN, challenge, a["client"], a["auth"], a["sig"], good, 0)["error"]
+
+  # somebody else's key
+  other = OpenSSL::PKey::EC.generate("prime256v1")
+  a = signed_assertion(other, RP, challenge, ORIGIN, 0)
+  assert_equal "that signature does not match this passkey",
+               WebAuthn.verify_assertion(RP, ORIGIN, challenge, a["client"], a["auth"], a["sig"], good, 0)["error"]
+
+  # a registration ceremony replayed as a login
+  client = B64.encode(client_data("webauthn.create", challenge, ORIGIN))
+  a = signed_assertion(key, RP, challenge, ORIGIN, 0)
+  assert_equal "that was the wrong kind of ceremony",
+               WebAuthn.verify_assertion(RP, ORIGIN, challenge, client, a["auth"], a["sig"], good, 0)["error"]
+end
+
+test "a counter that has not moved is a copied passkey, but only when both sides keep one" do
+  key = OpenSSL::PKey::EC.generate("prime256v1")
+  good = B64.encode(key.public_key_bytes)
+  challenge = WebAuthn.challenge
+  a = signed_assertion(key, RP, challenge, ORIGIN, 4)
+  assert_equal "that passkey looks like a copy",
+               WebAuthn.verify_assertion(RP, ORIGIN, challenge, a["client"], a["auth"], a["sig"], good, 9)["error"]
+  # Apple and Google authenticators always send zero; that is not evidence of anything.
+  a = signed_assertion(key, RP, challenge, ORIGIN, 0)
+  assert WebAuthn.verify_assertion(RP, ORIGIN, challenge, a["client"], a["auth"], a["sig"], good, 0)["ok"]
+end
+
+test "nothing malformed gets through, and nothing malformed raises" do
+  key = OpenSSL::PKey::EC.generate("prime256v1")
+  good = B64.encode(key.public_key_bytes)
+  challenge = WebAuthn.challenge
+  a = signed_assertion(key, RP, challenge, ORIGIN, 0)
+  ["", "!!!not base64!!!", B64.encode("short")].each do |junk|
+    assert !WebAuthn.verify_assertion(RP, ORIGIN, challenge, junk, a["auth"], a["sig"], good, 0)["ok"]
+    assert !WebAuthn.verify_assertion(RP, ORIGIN, challenge, a["client"], junk, a["sig"], good, 0)["ok"]
+    assert !WebAuthn.verify_assertion(RP, ORIGIN, challenge, a["client"], a["auth"], junk, good, 0)["ok"]
+  end
+  assert_equal "", WebAuthn.raw_signature("")
+  assert_equal "", WebAuthn.raw_signature("\x30\x06\x02\x01\x01")
+  assert_equal "", WebAuthn.public_key_point("")
+  assert_equal "", WebAuthn.public_key_point(SPKI_HEAD + ("\x09" * 65))
+end
+
+test "a passkey is the only way in, and the first one needs the setup secret" do
+  post "/auth/logout"
+  get "/plans/1"
+  assert_equal 303, status
+  assert_equal "/login", header("Location")
+  get "/"
+  assert_equal 303, status
+
+  get "/login"
+  assert_equal 200, status
+  assert body.include?("Sign in with a passkey")
+
+  # Enrolling is not open just because the page that starts it is.
+  post "/auth/register/options"
+  assert_equal 403, status
+  # And setup is a one-time door: it closed the moment the first account existed.
+  post "/auth/setup", secret: ENV.fetch("SETUP_SECRET", ""), name: "Someone else"
+  assert_equal 404, status
+
+  sign_in_with_passkey
+  assert_equal 200, status
+  get "/"
+  assert_equal 200, status
+  assert body.include?("Test device")
+end
+
+test "the registration options ask for the kind of passkey that names its own owner" do
+  post "/auth/register/options"
+  assert_equal 200, status
+  options = JSON.parse(body)
+  assert_equal "required", options["authenticatorSelection"]["residentKey"]
+  assert_equal(-7, options["pubKeyCredParams"].first["alg"])
+  assert_equal TEST_RP, options["rp"]["id"]
+  assert_equal 22, options["user"]["id"].size
+  assert_equal 43, options["challenge"].size
+  # The passkey already enrolled is excluded, so the same device cannot register twice.
+  assert_equal [TEST_CREDENTIAL], options["excludeCredentials"].map { |c| c["id"] }
+end
+
+test "a login is refused when the assertion is not this app's" do
+  post "/auth/logout"
+  get "/login" # signing out clears the session, and with it the CSRF token the next post needs
+  post "/auth/login/options"
+  challenge = JSON.parse(body)["challenge"]
+  a = signed_assertion(TEST_KEY, TEST_RP, challenge, "https://evil.example", 0)
+  post "/auth/login", credential_id: TEST_CREDENTIAL, client_data: a["client"],
+                      authenticator_data: a["auth"], signature: a["sig"], user_handle: ""
+  assert_equal 403, status
+  get "/"
+  assert_equal 303, status
+
+  # An unknown credential is refused before anything is verified.
+  post "/auth/login/options"
+  a = signed_assertion(TEST_KEY, TEST_RP, JSON.parse(body)["challenge"], TEST_ORIGIN, 0)
+  post "/auth/login", credential_id: B64.encode("nobody"), client_data: a["client"],
+                      authenticator_data: a["auth"], signature: a["sig"], user_handle: ""
+  assert_equal 403, status
 end

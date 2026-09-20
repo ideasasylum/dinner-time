@@ -1,0 +1,31 @@
+<%# locals: (setup:, ready:) %>
+<header class="bar">
+  <h1>Dinner Time</h1>
+</header>
+<main class="wrap">
+  <% if setup %>
+    <section class="card">
+      <h2>Claim this app</h2>
+      <% if ready %>
+        <p class="hint">Nobody owns this app yet. Enter the setup secret to claim it and make a passkey. This only works once.</p>
+        <form class="stack" data-setup>
+          <label>Setup secret <input type="password" name="secret" autocomplete="off" required></label>
+          <label>Your name <input type="text" name="name" value="Cook" autocomplete="off"></label>
+          <button class="btn primary">Claim it and make a passkey</button>
+        </form>
+      <% else %>
+        <p class="hint">Nobody owns this app yet, and no setup secret is set. On the machine that deploys it, run:</p>
+        <p class="hint"><strong>melee env SETUP_SECRET &lt;something long&gt;</strong></p>
+        <p class="hint">Then reload this page.</p>
+      <% end %>
+      <p class="hint" data-auth-status></p>
+    </section>
+  <% else %>
+    <section class="card">
+      <h2>Sign in</h2>
+      <p class="hint">This app opens with a passkey: your face, your fingerprint, or your device PIN. There is nothing to remember and nothing to type.</p>
+      <button class="btn primary" type="button" data-signin>Sign in with a passkey</button>
+      <p class="hint" data-auth-status></p>
+    </section>
+  <% end %>
+</main>

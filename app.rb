@@ -4,14 +4,90 @@ require_relative "lib/schedule"
 require_relative "lib/presets"
 require_relative "lib/alerts"
 require_relative "lib/plan"
+require_relative "lib/b64"
+require_relative "lib/webauthn"
+require_relative "lib/accounts"
 
 title "Dinner Time"
 
 PLACES = %w[oven1 oven2 hob].freeze
 
+# Everything else needs a passkey. These are the pages that get you one; the routes behind them check for
+# themselves who is allowed to enrol, since being reachable is not the same as being open.
+OPEN_PATHS = ["/login", "/auth/setup", "/auth/register/options", "/auth/register",
+              "/auth/login/options", "/auth/login"].freeze
+
+before do
+  redirect "/login" unless OPEN_PATHS.include?(request.path) || signed_in?
+end
+
+get "/login" do
+  redirect "/" if signed_in?
+  render :login, setup: !Accounts.claimed?, ready: !Accounts.setup_secret.empty?, title: "Sign in"
+end
+
+# The first account, and only while there is none: this app's address is public, so an open enrolment would
+# hand it to whoever found it first.
+post "/auth/setup" do
+  halt 404 if Accounts.claimed?
+  secret = Accounts.setup_secret
+  halt 503, "No setup secret is set. Run: melee env SETUP_SECRET <something long>" if secret.empty?
+  halt 403, "That is not the setup secret" unless secure_equal?(params.fetch(:secret), secret)
+  name = params.fetch(:name).strip
+  name = "Cook" if name.empty?
+  session[:setup] = Accounts.claim(name).to_s
+  text "ok"
+end
+
+post "/auth/register/options" do
+  user = enrolling_user
+  halt 403, "Nothing here is enrolling a passkey" if user.nil?
+  json WebAuthn.registration_options(rp_id, app_title, user["handle"].to_s, user["name"].to_s, user["name"].to_s,
+                                     mint_challenge, Accounts.credentials(user["id"]).map { |c| c["credential_id"].to_s })
+end
+
+post "/auth/register" do
+  user = enrolling_user
+  halt 403, "Nothing here is enrolling a passkey" if user.nil?
+  challenge = live_challenge
+  halt 400, "That took too long. Try again." if challenge.empty?
+  result = Accounts.register(user["id"], rp_id, rp_origin, challenge, params, params.fetch(:label).strip[0, 60].to_s)
+  session.delete(:challenge)
+  halt 400, result["error"].to_s unless result["ok"]
+  session.delete(:setup)
+  session[:user] = user["id"].to_s
+  text "ok"
+end
+
+post "/auth/login/options" do
+  json WebAuthn.assertion_options(rp_id, mint_challenge)
+end
+
+post "/auth/login" do
+  challenge = live_challenge
+  halt 400, "That took too long. Try again." if challenge.empty?
+  result = Accounts.authenticate(rp_id, rp_origin, challenge, params)
+  session.delete(:challenge)
+  halt 403, result["error"].to_s unless result["ok"]
+  session[:user] = result["user_id"].to_s
+  text "ok"
+end
+
+post "/auth/logout" do
+  session.clear
+  redirect "/login"
+end
+
+post "/auth/credentials/:id/delete" do
+  halt 400, "That is the only passkey that opens this app" if Accounts.credentials(current_user_id).size <= 1
+  Accounts.forget(current_user_id, params.fetch(:id))
+  redirect "/?notice=#{url_encode("Passkey removed.")}"
+end
+
 get "/" do
   plans = db.query("SELECT id, name, serve_at, tz_offset FROM plans ORDER BY serve_at DESC, id DESC")
-  render :index, plans: plans, devices: Alerts.subscriptions, notice: params.fetch(:notice)
+  render :index, plans: plans, devices: Alerts.subscriptions, notice: params.fetch(:notice),
+         user: Accounts.find(current_user_id), passkeys: Accounts.credentials(current_user_id)
 end
 
 # The VAPID public key the browser subscribes with. Fetched when needed rather than carried on every page.
@@ -201,6 +277,41 @@ def seed(plan, preset)
     dish_ids[dish] = plan.add_dish(dish) unless dish_ids.key?(dish)
     plan.add_step(dish_ids[dish], name, minutes.to_i, place, hands.to_i)
   end
+end
+
+def signed_in? = !session[:user].nil?
+def current_user_id = session[:user].to_i
+
+# Who is allowed to add a passkey right now: whoever is signed in, or the account setup just created.
+def enrolling_user
+  return Accounts.find(current_user_id) if signed_in?
+  id = session[:setup].to_i
+  id.zero? ? nil : Accounts.find(id)
+end
+
+# A passkey is bound to the hostname, and the origin check is what stops a look-alike site relaying a
+# ceremony here. Production takes both from the request. `melee dev` reports a hardcoded 127.0.0.1 whatever
+# the browser asked for, and WebAuthn refuses an IP address as a relying-party id, so development overrides
+# them: WEBAUTHN_RP_ID=localhost WEBAUTHN_ORIGIN=http://localhost:4567 melee dev
+def rp_id
+  set = Melee.env("WEBAUTHN_RP_ID", "")
+  set.empty? ? request.host.split(":").first.to_s : set
+end
+
+def rp_origin
+  set = Melee.env("WEBAUTHN_ORIGIN", "")
+  set.empty? ? request.base_url : set
+end
+
+def mint_challenge
+  challenge = WebAuthn.challenge
+  session[:challenge] = challenge
+  session[:challenge_at] = Time.now.to_i.to_s
+  challenge
+end
+
+def live_challenge
+  WebAuthn.fresh?(session[:challenge_at].to_i, Time.now.to_i) ? session[:challenge].to_s : ""
 end
 
 def place_label(place) = Plan.place_name(place)

@@ -1,4 +1,4 @@
-<%# locals: (plans:, devices:, notice:) %>
+<%# locals: (plans:, devices:, notice:, user:, passkeys:) %>
 <header class="bar">
   <h1>Dinner Time</h1>
 </header>
@@ -66,5 +66,27 @@
       </ul>
     <% end %>
     <form method="post" action="/push/test" id="test-alert"><%= csrf_field %></form>
+  </section>
+
+  <section class="card" id="account">
+    <h2>Passkeys</h2>
+    <p class="hint">Signed in as <strong><%= user.nil? ? "nobody" : user["name"] %></strong>. Only these passkeys open this app.</p>
+    <ul class="devices">
+      <% passkeys.each do |k| %>
+        <li>
+          <span><%= k["label"].to_s.empty? ? "A passkey" : k["label"] %></span>
+          <span class="muted"><%= k["last_used_at"].nil? ? "never used" : "last used #{Clock.day_label(k["last_used_at"].to_i, 0)}" %></span>
+          <% if passkeys.size > 1 %>
+            <form method="post" action="/auth/credentials/<%= k["id"] %>/delete" data-confirm="Remove this passkey?"><%= csrf_field %><button class="btn small danger">Remove</button></form>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+    <div class="row">
+      <button class="btn" type="button" data-add-passkey>Add this device</button>
+      <button class="btn danger" form="sign-out">Sign out</button>
+    </div>
+    <p class="hint" data-auth-status></p>
+    <form method="post" action="/auth/logout" id="sign-out"><%= csrf_field %></form>
   </section>
 </main>
