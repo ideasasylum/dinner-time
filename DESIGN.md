@@ -311,11 +311,15 @@ Sticky under the bar on the cook page, three lines and a progress rule, always a
 
 A 3px `red` rule along the bottom edge fills with the running step's progress and sits full while a step is late. The whole banner takes the `board-lit` wash and a `red` bottom rule in the late state.
 
+**The Started Rule.** A step's clock is the plan's until it actually begins, and the cook's afterwards. Until a step is started its finish is the planned one; once started, everything about it — the row's countdown, the cooking strip's "until", the finish alert the server sends — runs from `started_at + duration`. A step that is due but not begun is its own state, `to-start`, and the banner offers a Start button rather than a countdown: the cook who taps a tick to mean "it is in the oven" is reaching for a control that should exist, and now does.
+
+**The Behind Line.** How far behind is the worst overshoot any unfinished step is already committed to: a step begun late finishes late by the same margin, and one not begun cannot finish before now plus its own length. Shown only past two minutes, in `red`, with the remedy beside it as a button that moves serving time by that much rounded up to five. Never automatic — eating later and carving early are both valid, and the app does not get to choose.
+
 **The Two Kinds Rule.** A step the cook must stand over (hands-on) occupies them; every other step with a duration is a timer they can walk away from. The banner only ever names the first kind, or the next step due, or says "Nothing to do until then". A timer never becomes the instruction, because it asks nothing; it reports itself on the cooking strip and in its own row. Priority when several things are true at once: something late, then a timer that has finished, then the hands-on step in progress, then the next step due.
 
 The banner never repeats the list: it carries the focus step's countdown, so that step's own row shows none, and the list auto-scrolls to the step *after* the banner's, putting the focus row one flick above the fold. It shows dish and place precisely because its row is usually off-screen above.
 
-State words and lamps, one pair per condition: **Waiting** an empty `board-dim` ring; **Cooking** the same ring with a `red` core, a timer running with nothing asked of the cook; **Now** a solid `red` disc with its glow, the hands-on step in progress; **Ready** a thick `red` ring with a core, a timer that has run out; **Late** a thick `red` ring; **Done** a `board-dim` disc with a white tick. The lit `board-lit` band goes only to the step the banner names, and only once it has started.
+State words and lamps, one pair per condition: **Waiting** an empty `board-dim` ring; **Start** a thick `red` ring with its glow, the row on `board-lit`, and "tap to start" beneath the word, for a step that is due and not begun; **Cooking** a `board-dim` ring with a `red` core, a timer running with nothing asked of the cook; **Now** a solid `red` disc with its glow, the hands-on step in progress; **Ready** a thick `red` ring with a core, a timer that has run out; **Done** a `board-dim` disc with a white tick. One control per row, and the word beside it names what the tap does: a step not begun starts, a step under way finishes. The lit `board-lit` band goes only to the step the banner names, and only once it has started.
 
 `--bar-h` and `--stick` are measured in script and set on the cook element: the banner pins at `--bar-h` so no row can show through under the title bar, and rows carry `scroll-margin-top: var(--stick)` so an auto-scrolled row clears the whole sticky stack.
 
@@ -333,6 +337,9 @@ State words and lamps, one pair per condition: **Waiting** an empty `board-dim` 
 ### Don't:
 - **Don't** use red for a third meaning. On the board it is NOW or LATE; on the concourse it is the one primary action. Destructive text uses `danger`.
 - **Don't** let a timer become an instruction: if it asks nothing of the cook, it belongs on the cooking strip, not in the banner.
+- **Don't** infer that a step started because its planned time passed; a countdown from a time nobody confirmed is a countdown that lies.
+- **Don't** move serving time on the cook's behalf, however obvious the arithmetic looks.
+- **Don't** hide an element with `el.hidden` alone: every `display` rule in this sheet beats the browser's own `[hidden]`, which is why one sits at the top of the file with `!important`.
 - **Don't** pulse a lamp, sound the board, or animate anything other than the current band's background.
 - **Don't** put more than one row on `board-lit` at a time.
 - **Don't** add a fifth type size, a second typeface, or a system display face.

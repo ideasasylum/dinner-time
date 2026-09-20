@@ -17,6 +17,11 @@ clock with an alert for every step. Built on [melee](https://melee.ideasasylum.c
 - A step is either **hands-on**, which occupies you for its duration, or a **timer** you start and walk away
   from. The board only ever tells you to do the first kind. Timers report themselves on the cooking strip
   under the banner, so the beef roasting for two hours never poses as a task.
+- A step is either waiting, due to start, under way, or done, and **starting is its own event**. A step that
+  is due but not begun says START and offers the action; once begun, its countdown runs from when it actually
+  started rather than from the plan. Put the beef in twelve minutes late and the board says so, tells you how
+  far behind the whole dinner is, and offers to move serving time by that much. Whether to eat later or carve
+  early stays your call.
 - The **Cook** tab lays the result out as a vertical timeline with a live clock, countdowns, tick boxes, and
   buttons to nudge the serving time when you're running late.
 
@@ -87,8 +92,10 @@ test/app_test.rb         melee test, including firing the timer
 ```sh
 # WebAuthn refuses an IP address as a relying-party id, and `melee dev` reports a hardcoded
 # 127.0.0.1 whatever the browser asked for, so development is told what production works out:
-SETUP_SECRET=dev-secret WEBAUTHN_RP_ID=localhost WEBAUTHN_ORIGIN=http://localhost:4567 \
-  melee dev            # then open http://localhost:4567, not 127.0.0.1
+SETUP_SECRET=dev-secret WEBAUTHN_RP_ID=localhost WEBAUTHN_ORIGIN=http://localhost:4577 \
+  PORT=4577 melee dev  # then open http://localhost:4577, not 127.0.0.1
+                       # (and not 4567: every melee app defaults to it, so on a machine with
+                       #  several you can end up testing a different app entirely)
 SETUP_SECRET=x melee test        # the suite signs in, so it needs a secret too
 SETUP_SECRET=x melee test --both # the same file under both runtimes, diffed
 melee check            # compile with Spinel, no deploy
