@@ -124,7 +124,7 @@ label.check input { width: 22px; height: 22px; margin: 0; accent-color: var(--re
 .dep .go { color: var(--board-dim); display: flex; }
 
 /* lamps: a ring waiting, a lit disc now, a lit ring late, a dim ticked disc done */
-.lamp-wrap { display: grid; justify-items: center; gap: 3px; min-width: 64px; }
+.lamp-wrap { display: grid; justify-items: center; align-content: center; gap: 3px; min-width: 64px; }
 .lamp { width: 24px; height: 24px; display: block; overflow: visible; }
 .lamp .ring { fill: none; stroke: var(--board-dim); stroke-width: 2; }
 .lamp .dot, .lamp .tick, .lamp .glow, .lamp .core { display: none; }
@@ -148,8 +148,6 @@ label.check input { width: 22px; height: 22px; margin: 0; accent-color: var(--re
 .banner-start { flex: none; height: 44px; padding: 0 20px; }
 .behind { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 7px 0 0; padding-top: 7px; border-top: 1px solid var(--board-line); font-size: var(--s-cap); color: var(--red); font-weight: 700; }
 .behind .btn { flex: none; font-weight: 700; }
-.tap-hint { font-size: var(--s-cap); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; color: var(--red); line-height: 1; }
-.tap-hint:empty { display: none; }
 .banner-count strong { font-size: var(--s-time); font-weight: 700; line-height: 1; color: var(--red); }
 .banner-count small { font-size: var(--s-cap); font-weight: 500; color: var(--board-dim); margin-left: 5px; text-transform: uppercase; letter-spacing: .06em; }
 .banner-name { flex: 1; min-width: 0; margin: 3px 0 7px; font-size: var(--s-time); font-weight: 700; line-height: 1.1; letter-spacing: -0.01em; }

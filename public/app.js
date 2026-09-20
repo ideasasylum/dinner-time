@@ -241,8 +241,7 @@
       el, id: el.dataset.step, name: el.dataset.name, dish: el.dataset.dish, place: el.dataset.place, hands: el.dataset.hands === "1",
       start: parseInt(el.dataset.start, 10), end: parseInt(el.dataset.end, 10),
       minutes: parseInt(el.dataset.minutes, 10) * 60, started: parseInt(el.dataset.started || "0", 10),
-      countdown: $("[data-countdown]", el), tick: $(".tick", el), state: $("[data-state]", el),
-      tap: $("[data-tap]", el)
+      countdown: $("[data-countdown]", el), tick: $(".tick", el), state: $("[data-state]", el)
     }));
     const pad2 = n => String(n).padStart(2, "0");
     const hhmm = secs => { const m = Math.floor(((secs - tz * 60) % 86400 + 86400) % 86400 / 60); return `${pad2(Math.floor(m / 60))}:${pad2(m % 60)}`; };
@@ -383,7 +382,7 @@
 
       steps.forEach(s => {
         s.el.classList.remove("current", "overdue", "past", "running", "cooking", "ready", "to-start");
-        if (done(s)) { s.countdown.textContent = ""; s.state.textContent = "Done"; s.tap.textContent = ""; return; }
+        if (done(s)) { s.countdown.textContent = ""; s.state.textContent = "Done"; return; }
         const k = kind(s);
         // One lit band, and it is always the step the banner is about, so the page never points two ways.
         if (s === focus && k !== "waiting") s.el.classList.add("current");
@@ -393,7 +392,6 @@
         else if (k === "now" && s !== focus) s.el.classList.add("running");
         s.state.textContent = k === "waiting" ? "Waiting" : k === "to-start" ? "Start"
           : k === "cooking" ? "Cooking" : k === "ready" ? "Ready" : "Now";
-        s.tap.textContent = k === "to-start" ? "tap to start" : "";
         // The banner carries the focus step's countdown; the row would only repeat it.
         if (s === focus) s.countdown.textContent = "";
         else if (k === "waiting") s.countdown.textContent = "in " + span(s.start - now);
