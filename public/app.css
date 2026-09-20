@@ -182,11 +182,7 @@ label.check input { width: 22px; height: 22px; margin: 0; accent-color: var(--re
 .tl-step.current .t, .tl-step.current .name { color: var(--board-ink); }
 .tl-step.current .cap { color: var(--board-cap-lit); }
 .tl-step.current .countdown, .tl-step.current .state { color: var(--red); }
-.tl-step.current .lamp .ring { display: none; }
-.tl-step.current .lamp .dot { display: block; fill: var(--red); }
-.tl-step.current .lamp .glow, .tl-step.overdue .lamp .glow { display: block; }
 .tl-step.to-start .t, .tl-step.to-start .name { color: var(--board-ink); }
-.tl-step.to-start .dep { background: var(--board-lit); }
 .tl-step.to-start .state { color: var(--red); }
 .tl-step.to-start .lamp .ring { stroke: var(--red); stroke-width: 3; }
 .tl-step.to-start .lamp .glow { display: block; }
@@ -196,16 +192,12 @@ label.check input { width: 22px; height: 22px; margin: 0; accent-color: var(--re
 .tl-step.ready .state, .tl-step.ready .countdown { color: var(--red); }
 .tl-step.ready .lamp .ring { stroke: var(--red); stroke-width: 3; }
 .tl-step.ready .lamp .core { display: block; }
-.tl-step.running .t, .tl-step.running .name { color: var(--board-ink); }
-.tl-step.running .cap { color: var(--board-cap-lit); }
-.tl-step.running .state, .tl-step.running .countdown { color: var(--board-ink); }
-.tl-step.running .lamp .ring { stroke: var(--board-ink); stroke-width: 3; }
-.tl-step.overdue .t, .tl-step.overdue .name { color: var(--board-ink); }
-.tl-step.overdue .countdown, .tl-step.overdue .state { color: var(--red); }
-.tl-step.overdue .lamp .ring { stroke: var(--red); stroke-width: 3; }
-/* A late step the banner is about keeps the band, but wears the late ring rather than the now dot. */
-.tl-step.current.overdue .lamp .ring { display: block; }
-.tl-step.current.overdue .lamp .dot { display: none; }
+.tl-step.now .t, .tl-step.now .name { color: var(--board-ink); }
+.tl-step.now .cap { color: var(--board-cap-lit); }
+.tl-step.now .state { color: var(--red); }
+.tl-step.now .lamp .ring { display: none; }
+.tl-step.now .lamp .dot { display: block; fill: var(--red); }
+.tl-step.now .lamp .glow { display: block; }
 .tl-step.done .dep { background: transparent; }
 .tl-step.done .t, .tl-step.done .name, .tl-step.done .cap, .tl-step.done .state { color: var(--board-dim); opacity: .75; }
 .tl-step.done .name { text-decoration: line-through; text-decoration-thickness: 1.5px; }

@@ -381,15 +381,16 @@
       else if (next) { focus = next; state = "next"; }
 
       steps.forEach(s => {
-        s.el.classList.remove("current", "overdue", "past", "running", "cooking", "ready", "to-start");
+        s.el.classList.remove("current", "now", "cooking", "ready", "to-start");
         if (done(s)) { s.countdown.textContent = ""; s.state.textContent = "Done"; return; }
         const k = kind(s);
-        // One lit band, and it is always the step the banner is about, so the page never points two ways.
+        // The lamp says what state a step is in; the lit band says which one the banner is about. Keeping
+        // those on separate channels is what stops two steps in the same state from looking like two states.
         if (s === focus && k !== "waiting") s.el.classList.add("current");
         if (k === "to-start") s.el.classList.add("to-start");
         else if (k === "cooking") s.el.classList.add("cooking");
         else if (k === "ready") s.el.classList.add("ready");
-        else if (k === "now" && s !== focus) s.el.classList.add("running");
+        else if (k === "now") s.el.classList.add("now");
         s.state.textContent = k === "waiting" ? "Waiting" : k === "to-start" ? "Start"
           : k === "cooking" ? "Cooking" : k === "ready" ? "Ready" : "Now";
         // The banner carries the focus step's countdown; the row would only repeat it.
