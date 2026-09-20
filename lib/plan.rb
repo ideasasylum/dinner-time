@@ -32,7 +32,7 @@ class Plan < Durable
   def dishes = storage.query("SELECT id, name, position FROM dishes ORDER BY position, id")
 
   def steps
-    storage.query "SELECT s.id, s.dish_id, s.name, s.minutes, s.place, s.hands, s.position, s.done_at, s.alerted_at, s.end_alerted_at " \
+    storage.query "SELECT s.id, s.dish_id, s.name, s.minutes, s.place, s.hands, s.position, s.done_at, s.started_at, s.alerted_at, s.end_alerted_at " \
                   "FROM steps s JOIN dishes d ON d.id = s.dish_id ORDER BY d.position, s.position, s.id"
   end
 
@@ -108,8 +108,16 @@ class Plan < Durable
     done ? "done" : "undone"
   end
 
+  # Starting is its own event. A cook who says "it is in the oven" is not saying "it is cooked", and until
+  # this was recordable the only control meant the second thing.
+  def set_started(step_id, started)
+    storage.run "UPDATE steps SET started_at = ?, done_at = NULL WHERE id = ?", started ? Time.now.to_i : nil, step_id.to_i
+    arm
+    started ? "started" : "unstarted"
+  end
+
   def reset_done
-    storage.run "UPDATE steps SET done_at = NULL, alerted_at = NULL, end_alerted_at = NULL"
+    storage.run "UPDATE steps SET done_at = NULL, started_at = NULL, alerted_at = NULL, end_alerted_at = NULL"
     storage.delete("served_alerted")
     arm
   end
@@ -157,7 +165,7 @@ class Plan < Durable
     now = Time.now.to_i
     plan = timeline
     due = plan.select { |s| s["done_at"].nil? && s["alerted_at"].nil? && s["start_at"].to_i <= now + 2 }
-    finished = plan.select { |s| s["done_at"].nil? && s["end_alerted_at"].nil? && timer_step?(s) && s["end_at"].to_i <= now + 2 }
+    finished = plan.select { |s| s["done_at"].nil? && s["end_alerted_at"].nil? && timer_step?(s) && Plan.real_end(s) <= now + 2 }
     if !due.empty?
       send_alert(start_text(due, finished, now))
     elsif !finished.empty?
@@ -205,7 +213,7 @@ class Plan < Durable
         end
       end
       next unless timer_step?(s)
-      finish = s["end_at"].to_i
+      finish = Plan.real_end(s)
       ended = !s["end_alerted_at"].nil?
       if ended && finish > now + GRACE
         storage.run "UPDATE steps SET end_alerted_at = NULL WHERE id = ?", s["id"].to_i
@@ -236,6 +244,12 @@ class Plan < Durable
 
   # A step you have to stand over occupies the cook; anything else is a timer they can walk away from.
   def timer_step?(step) = step["hands"].to_i.zero? && step["end_at"].to_i > step["start_at"].to_i
+
+  # What the clock on the wall says this step will finish, which is the plan's time only until it begins.
+  def self.real_end(step)
+    return step["end_at"].to_i if step["started_at"].nil?
+    step["started_at"].to_i + step["minutes"].to_i * 60
+  end
 
   def where_of(step) = step["place"].to_s.empty? ? "" : Plan.place_name(step["place"].to_s)
 

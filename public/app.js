@@ -240,7 +240,9 @@
     const steps = $$(".tl-step[data-step]", cook).map(el => ({
       el, id: el.dataset.step, name: el.dataset.name, dish: el.dataset.dish, place: el.dataset.place, hands: el.dataset.hands === "1",
       start: parseInt(el.dataset.start, 10), end: parseInt(el.dataset.end, 10),
-      countdown: $("[data-countdown]", el), tick: $(".tick", el), state: $("[data-state]", el)
+      minutes: parseInt(el.dataset.minutes, 10) * 60, started: parseInt(el.dataset.started || "0", 10),
+      countdown: $("[data-countdown]", el), tick: $(".tick", el), state: $("[data-state]", el),
+      tap: $("[data-tap]", el)
     }));
     const pad2 = n => String(n).padStart(2, "0");
     const hhmm = secs => { const m = Math.floor(((secs - tz * 60) % 86400 + 86400) % 86400 / 60); return `${pad2(Math.floor(m / 60))}:${pad2(m % 60)}`; };
@@ -249,11 +251,29 @@
     const banner = $(".clock", cook);
     const bLabel = $("[data-label]", banner), bDish = $("[data-dish]", banner), bCount = $("[data-count]", banner),
           bUnit = $("[data-unit]", banner), bName = $("[data-headline]", banner), bNext = $("[data-next]", banner),
-          bBar = $("[data-progress]", banner), bCooking = $("[data-cooking]", banner);
-    steps.forEach(s => s.tick.addEventListener("change", () => {
-      s.el.classList.toggle("done", s.tick.checked);
-      post(`/plans/${cook.dataset.plan}/steps/${s.id}/done`, { done: s.tick.checked ? "1" : "0" }).catch(() => {});
+          bBar = $("[data-progress]", banner), bCooking = $("[data-cooking]", banner),
+          bStart = $("[data-start-focus]", banner), bBehind = $("[data-behind]", banner),
+          bBehindText = $("[data-behind-text]", banner), bCatchUp = $("[data-catch-up]", banner);
+    let startTarget = null;
+    // One control, and the word beside it says which thing the tap does: a step that has not begun starts,
+    // one that is under way finishes. Tapping the tick to mean "yes, it is in the oven" is what the cook
+    // reached for before starting was recordable at all.
+    const planId = cook.dataset.plan;
+    const markStarted = s => {
+      s.started = Math.floor(Date.now() / 1000);
+      post(`/plans/${planId}/steps/${s.id}/started`, { started: "1" }).catch(() => {});
       render();
+    };
+    const markDone = (s, done) => {
+      s.el.classList.toggle("done", done);
+      if (done && !s.started) s.started = s.start;
+      post(`/plans/${planId}/steps/${s.id}/done`, { done: done ? "1" : "0" }).catch(() => {});
+      render();
+    };
+    steps.forEach(s => s.tick.addEventListener("change", () => {
+      const wasChecked = s.tick.checked;
+      if (!s.started && wasChecked) { s.tick.checked = false; markStarted(s); return; }
+      markDone(s, wasChecked);
     }));
 
     // In-page alerts while the page is open: a chime and a buzz; the native notification comes from the server.
@@ -327,54 +347,61 @@
       setTimeout(() => { go(); programmatic = false; }, 300);
     };
 
+    bStart.addEventListener("click", () => { if (startTarget) markStarted(startTarget); });
+    bCatchUp.addEventListener("click", () => {
+      const minutes = bCatchUp.dataset.minutes;
+      post(`/plans/${planId}/shift`, { minutes }).then(() => location.reload()).catch(() => {});
+    });
+
     let last = Math.floor(Date.now() / 1000);
     const render = () => {
       const now = Math.floor(Date.now() / 1000);
       const pending = steps.filter(s => !done(s));
       // A step you stand over occupies you; anything else is a timer you can walk away from. The board only
       // ever tells you to do the first kind, and reports the second kind as what is cooking.
-      const isTimer = s => !s.hands && s.end > s.start;
-      const started = s => s.start <= now;
-      const late = s => now - s.end > 60;
-      const kind = s => !started(s) ? "waiting"
-        : late(s) ? "late"
-        : isTimer(s) ? (now < s.end ? "cooking" : "ready")
-        : now < s.end ? "now" : "ready";
+      const isTimer = s => !s.hands && s.minutes > 0;
+      // A step's own clock: the plan's finish until it actually begins, and its real one after.
+      const finish = s => s.started ? s.started + s.minutes : s.end;
+      const kind = s => !s.started ? (s.start > now ? "waiting" : "to-start")
+        : now < finish(s) ? (isTimer(s) ? "cooking" : "now")
+        : "ready";
 
-      const byEnd = (a, b) => a.end - b.end;
-      const overdue = pending.filter(late).sort(byEnd)[0] || null;
-      const ready = pending.filter(s => kind(s) === "ready").sort(byEnd)[0] || null;
-      const busy = pending.filter(s => kind(s) === "now").sort(byEnd)[0] || null;
-      const next = pending.filter(s => !started(s)).sort((a, b) => a.start - b.start)[0] || null;
-      const cooking = pending.filter(s => kind(s) === "cooking").sort(byEnd);
+      const byFinish = (a, b) => finish(a) - finish(b);
+      const ready = pending.filter(s => kind(s) === "ready").sort(byFinish)[0] || null;
+      const toStart = pending.filter(s => kind(s) === "to-start").sort((a, b) => a.start - b.start)[0] || null;
+      const busy = pending.filter(s => kind(s) === "now").sort(byFinish)[0] || null;
+      const next = pending.filter(s => kind(s) === "waiting").sort((a, b) => a.start - b.start)[0] || null;
+      const cooking = pending.filter(s => kind(s) === "cooking").sort(byFinish);
 
-      // Food off the heat beats a knife in your hand; a knife in your hand beats a clock that has not struck.
+      // Something off the heat beats something due to go on; either beats a knife already in your hand,
+      // which can pause; and all of them beat a clock that has not struck yet.
       let focus = null, state = "done";
-      if (overdue) { focus = overdue; state = "late"; }
-      else if (ready) { focus = ready; state = "ready"; }
+      if (ready) { focus = ready; state = "ready"; }
+      else if (toStart) { focus = toStart; state = "to-start"; }
       else if (busy) { focus = busy; state = "now"; }
       else if (next) { focus = next; state = "next"; }
 
       steps.forEach(s => {
-        s.el.classList.remove("current", "overdue", "past", "running", "cooking", "ready");
-        if (done(s)) { s.countdown.textContent = ""; s.state.textContent = "Done"; return; }
+        s.el.classList.remove("current", "overdue", "past", "running", "cooking", "ready", "to-start");
+        if (done(s)) { s.countdown.textContent = ""; s.state.textContent = "Done"; s.tap.textContent = ""; return; }
         const k = kind(s);
         // One lit band, and it is always the step the banner is about, so the page never points two ways.
-        if (s === focus && started(s)) s.el.classList.add("current");
-        if (k === "late") s.el.classList.add("overdue");
+        if (s === focus && k !== "waiting") s.el.classList.add("current");
+        if (k === "to-start") s.el.classList.add("to-start");
         else if (k === "cooking") s.el.classList.add("cooking");
         else if (k === "ready") s.el.classList.add("ready");
         else if (k === "now" && s !== focus) s.el.classList.add("running");
-        s.state.textContent = k === "waiting" ? "Waiting" : k === "cooking" ? "Cooking"
-          : k === "ready" ? "Ready" : k === "late" ? "Late" : "Now";
+        s.state.textContent = k === "waiting" ? "Waiting" : k === "to-start" ? "Start"
+          : k === "cooking" ? "Cooking" : k === "ready" ? "Ready" : "Now";
+        s.tap.textContent = k === "to-start" ? "tap to start" : "";
         // The banner carries the focus step's countdown; the row would only repeat it.
         if (s === focus) s.countdown.textContent = "";
         else if (k === "waiting") s.countdown.textContent = "in " + span(s.start - now);
-        else if (k === "late") s.countdown.textContent = "late by " + span(now - s.end);
-        else if (k === "cooking") s.countdown.textContent = span(s.end - now) + " left";
+        else if (k === "to-start") s.countdown.textContent = now - s.start > 60 ? "due " + span(now - s.start) + " ago" : "";
+        else if (k === "cooking") s.countdown.textContent = span(finish(s) - now) + " left";
         else s.countdown.textContent = "";
-        if (last < s.start && s.start <= now) notify();
-        else if (last < s.end && s.end <= now && isTimer(s)) notify();
+        if (last < s.start && s.start <= now && !s.started) notify();
+        else if (s.started && last < finish(s) && finish(s) <= now && isTimer(s)) notify();
       });
       if (last < serveAt && serveAt <= now) notify("Dinner is served", "Everything should be on the table.");
       const serveRow = $(".tl-step.serve", cook);
@@ -384,14 +411,17 @@
       banner.dataset.state = state;
       let bar = 0;
       if (focus) {
-        bLabel.textContent = state === "late" ? "Late" : state === "ready" ? "Ready" : state === "now" ? "Now" : "Next";
+        bLabel.textContent = state === "ready" ? "Ready" : state === "to-start" ? "Start" : state === "now" ? "Now" : "Next";
         bName.textContent = focus.name;
         bDish.textContent = focus.place ? focus.dish + " \u00b7 " + focus.place : focus.dish;
-        if (state === "late") { bCount.textContent = span(now - focus.end); bUnit.textContent = "over"; bar = 1; }
-        else if (state === "ready") { bCount.textContent = span(Math.max(0, now - focus.end)); bUnit.textContent = "ago"; bar = 1; }
-        else if (state === "now" && focus.end > focus.start) {
-          bCount.textContent = span(focus.end - now); bUnit.textContent = "left";
-          bar = (now - focus.start) / (focus.end - focus.start);
+        if (state === "ready") { bCount.textContent = span(Math.max(0, now - finish(focus))); bUnit.textContent = "ago"; bar = 1; }
+        else if (state === "to-start") {
+          const over = now - focus.start;
+          bCount.textContent = over > 60 ? span(over) : "Now";
+          bUnit.textContent = over > 60 ? "late to start" : "";
+        } else if (state === "now" && focus.minutes > 0) {
+          bCount.textContent = span(finish(focus) - now); bUnit.textContent = "left";
+          bar = (now - focus.started) / focus.minutes;
         } else if (state === "now") { bCount.textContent = span(Math.max(0, serveAt - now)); bUnit.textContent = "to serve"; }
         else { bCount.textContent = span(focus.start - now); bUnit.textContent = "to go"; }
       } else {
@@ -404,7 +434,7 @@
       }
       // "Then" means the next thing that has not started. When the cook is behind, everything left has already
       // started, and naming one of them with its long-gone time would read as a schedule rather than a backlog.
-      const upcoming = pending.filter(s => s !== focus && !started(s)).sort((a, b) => a.start - b.start)[0] || null;
+      const upcoming = pending.filter(s => s !== focus && kind(s) === "waiting").sort((a, b) => a.start - b.start)[0] || null;
       const others = pending.filter(s => s !== focus).length;
       const follow = upcoming || pending.filter(s => s !== focus).sort((a, b) => a.start - b.start)[0] || null;
       bNext.textContent = state === "next" ? "Nothing to do until then"
@@ -429,6 +459,28 @@
         bCooking.appendChild(row);
       });
       bCooking.hidden = cooking.length === 0;
+
+      bStart.hidden = state !== "to-start";
+      startTarget = state === "to-start" ? focus : null;
+
+      // How far behind: the worst overshoot anything unfinished is already committed to. A step that began
+      // late finishes late by the same margin; one that has not begun cannot finish before now plus its own
+      // length. The cook decides what to do about it, so the offer is a button and never automatic.
+      let behind = 0;
+      pending.forEach(s => {
+        const late = s.started ? s.started + s.minutes - s.end : now - s.start;
+        if (late > behind) behind = late;
+      });
+      if (behind >= 120) {
+        const minutes = Math.ceil(behind / 60);
+        const to = Math.ceil(minutes / 5) * 5;
+        bBehindText.textContent = minutes + " min behind";
+        bCatchUp.textContent = "Dinner at " + hhmm(serveAt + to * 60);
+        bCatchUp.dataset.minutes = String(to);
+        bBehind.hidden = false;
+      } else {
+        bBehind.hidden = true;
+      }
 
       // The banner holds what you are doing; park the list on what comes next, so the two never repeat each
       // other. The step in the banner sits just above the fold, one flick away.

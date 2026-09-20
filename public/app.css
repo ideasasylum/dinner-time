@@ -32,6 +32,9 @@
 }
 
 * { box-sizing: border-box; }
+/* Any author `display` beats the browser's own [hidden] rule, and three elements here set one, so hiding
+   them from script did nothing at all. */
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; scrollbar-color: var(--line) transparent; }
 body {
   margin: 0; background: var(--ground); color: var(--ink);
@@ -141,9 +144,15 @@ label.check input { width: 22px; height: 22px; margin: 0; accent-color: var(--re
 .banner-label { font-size: var(--s-cap); text-transform: uppercase; letter-spacing: .1em; font-weight: 700; color: var(--red); flex: none; }
 .banner-dish { font-size: var(--s-cap); color: var(--board-dim); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .banner-count { flex: none; white-space: nowrap; }
+.banner-line { display: flex; align-items: center; gap: 12px; }
+.banner-start { flex: none; height: 44px; padding: 0 20px; }
+.behind { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 7px 0 0; padding-top: 7px; border-top: 1px solid var(--board-line); font-size: var(--s-cap); color: var(--red); font-weight: 700; }
+.behind .btn { flex: none; font-weight: 700; }
+.tap-hint { font-size: var(--s-cap); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; color: var(--red); line-height: 1; }
+.tap-hint:empty { display: none; }
 .banner-count strong { font-size: var(--s-time); font-weight: 700; line-height: 1; color: var(--red); }
 .banner-count small { font-size: var(--s-cap); font-weight: 500; color: var(--board-dim); margin-left: 5px; text-transform: uppercase; letter-spacing: .06em; }
-.banner-name { margin: 3px 0 7px; font-size: var(--s-time); font-weight: 700; line-height: 1.1; letter-spacing: -0.01em; }
+.banner-name { flex: 1; min-width: 0; margin: 3px 0 7px; font-size: var(--s-time); font-weight: 700; line-height: 1.1; letter-spacing: -0.01em; }
 .banner-foot { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 0; font-size: var(--s-cap); color: var(--board-dim); }
 .banner-foot span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .banner-foot .serve { flex: none; }
@@ -178,6 +187,11 @@ label.check input { width: 22px; height: 22px; margin: 0; accent-color: var(--re
 .tl-step.current .lamp .ring { display: none; }
 .tl-step.current .lamp .dot { display: block; fill: var(--red); }
 .tl-step.current .lamp .glow, .tl-step.overdue .lamp .glow { display: block; }
+.tl-step.to-start .t, .tl-step.to-start .name { color: var(--board-ink); }
+.tl-step.to-start .dep { background: var(--board-lit); }
+.tl-step.to-start .state { color: var(--red); }
+.tl-step.to-start .lamp .ring { stroke: var(--red); stroke-width: 3; }
+.tl-step.to-start .lamp .glow { display: block; }
 .tl-step.cooking .name { color: var(--board-ink); }
 .tl-step.cooking .lamp .core { display: block; }
 .tl-step.ready .t, .tl-step.ready .name { color: var(--board-ink); }

@@ -49,6 +49,7 @@ module Schedule
       "place" => step["place"],
       "hands" => step["hands"],
       "done_at" => step["done_at"],
+      "started_at" => step["started_at"],
       "alerted_at" => step["alerted_at"],
       "end_alerted_at" => step["end_alerted_at"],
       "start_at" => start_at,
@@ -59,4 +60,21 @@ module Schedule
   end
 
   def self.first_start(placed) = placed.empty? ? nil : placed.first["start_at"].to_i
+
+  # How far behind the cook is, in seconds, and nothing fancier: the worst overshoot any unfinished step is
+  # already committed to. A step that began late will finish late by the same margin; one that has not begun
+  # cannot finish before now plus its own length. Zero when the plan is still on time.
+  def self.delay(placed, now)
+    worst = 0
+    placed.each do |s|
+      next unless s["done_at"].nil?
+      behind = if s["started_at"].nil?
+                 now - s["start_at"].to_i
+               else
+                 s["started_at"].to_i + s["minutes"].to_i * 60 - s["end_at"].to_i
+               end
+      worst = behind if behind > worst
+    end
+    worst
+  end
 end

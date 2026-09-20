@@ -1,4 +1,4 @@
-const VERSION = "dinner-time-v20";
+const VERSION = "dinner-time-v21";
 // Fonts and icons never change under the same name, so they are cache-first. Everything else, the pages and
 // the code, is network-first: the cache is a safety net for the kitchen wifi dropping, never a speed layer.
 // Cache-first on app.css or app.js would leave a cook one deploy behind, looking at the previous design.

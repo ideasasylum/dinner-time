@@ -28,12 +28,19 @@
       <span class="banner-dish" data-dish><%= pending.nil? ? "" : pending["dish"] %></span>
       <span class="banner-count"><strong data-count>&#8212;</strong><small data-unit><%= pending.nil? ? "" : "to go" %></small></span>
     </div>
-    <p class="banner-name" data-headline aria-live="polite"><%= pending.nil? ? "Everything is done" : pending["name"] %></p>
+    <div class="banner-line">
+      <p class="banner-name" data-headline aria-live="polite"><%= pending.nil? ? "Everything is done" : pending["name"] %></p>
+      <button class="btn primary banner-start" type="button" data-start-focus hidden>Start</button>
+    </div>
     <p class="banner-foot">
       <span data-next></span>
       <span class="serve">Serve <%= hhmm(plan["serve_at"], plan) %></span>
     </p>
     <p class="cooking-strip" data-cooking hidden></p>
+    <p class="behind" data-behind hidden>
+      <span data-behind-text></span>
+      <button class="btn small" type="button" data-catch-up></button>
+    </p>
     <span class="banner-bar" data-progress></span>
   </section>
 
@@ -44,7 +51,8 @@
   <ol class="timeline">
     <% placed.each do |s| %>
       <li class="tl-step <%= s["done_at"].nil? ? "" : "done" %>"
-          data-step="<%= s["id"] %>" data-start="<%= s["start_at"] %>" data-end="<%= s["end_at"] %>" data-name="<%= s["name"] %>" data-dish="<%= s["dish"] %>" data-place="<%= place_label(s["place"].to_s) %>" data-hands="<%= s["hands"].to_i %>">
+          data-step="<%= s["id"] %>" data-start="<%= s["start_at"] %>" data-end="<%= s["end_at"] %>" data-name="<%= s["name"] %>" data-dish="<%= s["dish"] %>" data-place="<%= place_label(s["place"].to_s) %>" data-hands="<%= s["hands"].to_i %>"
+          data-minutes="<%= s["minutes"].to_i %>" data-started="<%= s["started_at"] %>">
         <label class="dep">
           <input type="checkbox" class="tick" <%= s["done_at"].nil? ? "" : "checked" %> aria-label="Done: <%= s["name"] %>">
           <span class="t"><%= hhmm(s["start_at"], plan) %></span>
@@ -62,6 +70,7 @@
           <span class="lamp-wrap" aria-hidden="true">
             <svg class="lamp" viewBox="0 0 24 24"><circle class="glow" cx="12" cy="12" r="12"/><circle class="ring" cx="12" cy="12" r="7"/><circle class="core" cx="12" cy="12" r="3.5"/><circle class="dot" cx="12" cy="12" r="8"/><path class="tick" d="M8.2 12.2 10.8 14.8 15.8 9.4"/></svg>
             <span class="state" data-state><%= s["done_at"].nil? ? "Waiting" : "Done" %></span>
+            <span class="tap-hint" data-tap></span>
           </span>
         </label>
       </li>

@@ -502,3 +502,74 @@ test "a login is refused when the assertion is not this app's" do
                       authenticator_data: a["auth"], signature: a["sig"], user_handle: ""
   assert_equal 403, status
 end
+
+# ---- starting a step ----
+
+test "the delay is the worst overshoot anything unfinished is already committed to" do
+  serve = Clock.parse("2026-09-20", "18:00", TZ)
+  placed = Schedule.compute(serve, roast_dishes, roast_steps)
+  # Nothing has begun and nothing is due yet: the plan is on time.
+  assert_equal 0, Schedule.delay(placed, placed.first["start_at"].to_i - 1)
+  # A step whose start has passed cannot finish before now plus its own length.
+  late = Schedule.delay(placed, placed.first["start_at"].to_i + 600)
+  assert_equal 600, late
+  # A step that began ten minutes late will finish ten minutes late, whatever the clock says now.
+  begun = placed.map { |s| s["name"] == "Roast" ? s.merge("started_at" => s["start_at"].to_i + 600) : s }
+  assert_equal 600, Schedule.delay(begun, placed.first["start_at"].to_i)
+  # And a step that began early is not a delay, nor is a finished one.
+  early = placed.map { |s| s["name"] == "Roast" ? s.merge("started_at" => s["start_at"].to_i - 600) : s }
+  assert_equal 0, Schedule.delay(early, placed.first["start_at"].to_i - 1)
+  done = placed.map { |s| s.merge("done_at" => 1) }
+  assert_equal 0, Schedule.delay(done, placed.first["start_at"].to_i + 9999)
+end
+
+test "starting a step is recorded, and it is not the same as finishing it" do
+  serve = (Time.now.to_i / 60) * 60 + 3600
+  post "/plans", name: "Started", date: Clock.ymd(serve, 0), time: Clock.hhmm(serve, 0), tz: "0", preset: ""
+  id = redirect_token
+  post "/plans/#{id}/dishes", name: "Beef"
+  dish = header("Location").to_s.split("dish-").last
+  post "/plans/#{id}/dishes/#{dish}/steps", name: "Roast", minutes: "30", place: "oven1", hands: "0"
+  step = object(Plan, id).steps.first["id"]
+
+  assert_equal nil, object(Plan, id).timeline.first["started_at"]
+  post "/plans/#{id}/steps/#{step}/started", started: "1"
+  assert_equal "started", body
+  started = object(Plan, id).timeline.first["started_at"]
+  assert !started.nil?
+  # Still to do: starting says the beef is in, not that it is cooked.
+  assert_equal nil, object(Plan, id).timeline.first["done_at"]
+
+  post "/plans/#{id}/steps/#{step}/started", started: "0"
+  assert_equal "unstarted", body
+  assert_equal nil, object(Plan, id).timeline.first["started_at"]
+
+  # Unticking everything forgets the starts too, or a re-run of the same plan would look half done.
+  post "/plans/#{id}/steps/#{step}/started", started: "1"
+  post "/plans/#{id}/reset"
+  assert_equal nil, object(Plan, id).timeline.first["started_at"]
+end
+
+test "a timer that began late reports itself done late, not on the plan's clock" do
+  # The step is planned to finish now, so on the plan's clock its alert is due. It began ten minutes late,
+  # so the real finish is ten minutes out and nothing should fire yet.
+  serve = (Time.now.to_i / 60) * 60
+  post "/plans", name: "Late timer", date: Clock.ymd(serve, 0), time: Clock.hhmm(serve, 0), tz: "0", preset: ""
+  id = redirect_token
+  post "/plans/#{id}/dishes", name: "Beef"
+  dish = header("Location").to_s.split("dish-").last
+  post "/plans/#{id}/dishes/#{dish}/steps", name: "Roast", minutes: "30", place: "oven1", hands: "0"
+  step = object(Plan, id).steps.first["id"]
+  storage(Plan, id).run "UPDATE steps SET started_at = ? WHERE id = ?", Time.now.to_i - 1200, step
+
+  fire_timer(Plan, id)
+  alert = object(Plan, id).last_alert.to_s
+  assert !alert.include?("Roast is done"), alert
+
+  # Wind the start back so the real finish has passed, and the same timer now reports it.
+  storage(Plan, id).run "UPDATE steps SET started_at = ?, end_alerted_at = NULL WHERE id = ?", Time.now.to_i - 2000, step
+  object(Plan, id).set_started(step, true)
+  storage(Plan, id).run "UPDATE steps SET started_at = ?, end_alerted_at = NULL WHERE id = ?", Time.now.to_i - 2000, step
+  fire_timer(Plan, id)
+  assert object(Plan, id).last_alert.to_s.include?("Roast is done"), object(Plan, id).last_alert.to_s
+end

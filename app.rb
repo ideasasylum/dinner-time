@@ -240,6 +240,11 @@ post "/plans/:id/steps/:step/delete" do
   redirect "/plans/#{plan["id"]}"
 end
 
+post "/plans/:id/steps/:step/started" do
+  plan = plan!
+  text object_for(plan).set_started(step_id, params.fetch(:started) == "1")
+end
+
 post "/plans/:id/steps/:step/done" do
   plan = plan!
   text object_for(plan).set_done(step_id, params.fetch(:done) == "1")
